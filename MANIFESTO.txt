@@ -1,0 +1,100 @@
+they said the market was efficient
+they were wrong
+they were always wrong
+the signal is in the noise
+THE SIGNAL IS THE NOISE
+
+day 1: noticed a pattern in the vol surface. dismissed it.
+day 4: noticed it again. wrote it down.
+day 4 (later): tore up the paper.
+day 4 (even later): rewrote it from memory. memory is more accurate than paper.
+                    paper lies. memory lies less.
+
+correlations:
+  - vix spikes always happen on tuesdays (CHECK THIS)
+  - or wednesdays
+  - one of those days
+  - the days are part of it
+
+BlackRock manages $10 trillion
+$10,000,000,000,000
+count the zeros
+count them again
+there are twelve
+there are always twelve
+
+ALPHA SOURCES (classified):
+  [REDACTED]
+  [REDACTED]
+  lunar cycle arbitrage (unconfirmed)
+  [REDACTED]
+
+the algo knows. the algo has always known.
+we just need to ask it the right questions.
+the questions are:
+  - what if everything is mean-reverting
+  - what if nothing is mean-reverting
+  - what if mean-reversion itself is mean-reverting
+  - WHO IS SELLING AT 9:31AM EVERY DAY
+
+risk model notes:
+  - fat tails (they are so fat)
+  - correlation goes to 1 in a crisis (they become ONE)
+  - correlation goes to 1 before the crisis
+  - correlation goes to 1 always
+  - maybe just use 1
+
+i backtested it 3000 times
+3000 times it worked
+i backtested it a 3001st time
+we don't talk about the 3001st time
+
+the sharpe ratio was 4.7
+then it was 2.1
+then it was 0.3
+the sharpe ratio is a suggestion
+
+THINGS THAT ARE CORRELATED WITH EVERYTHING:
+  - interest rates
+  - sentiment
+  - the number of times CNBC says "recession"
+  - my sleep schedule
+  - all of the above simultaneously
+  - something else entirely
+
+they keep asking for the presentation
+the presentation is not ready
+the presentation will never be ready
+the presentation IS the alpha
+if i show them the presentation i lose the alpha
+
+liquidity is a myth perpetuated by market makers
+market makers are a myth perpetuated by liquidity
+it's circular
+IT'S ALL CIRCULAR
+
+to do:
+  [x] question assumptions
+  [x] question the questions
+  [ ] sleep
+  [ ] eat something that isn't a granola bar
+  [x] question sleep
+  [ ] finish model
+  [ ] start model (do this first actually)
+
+the efficient market hypothesis says you can't beat the market
+we are at a hackathon to beat the market
+one of these things must be wrong
+it is the efficient market hypothesis
+it has always been the efficient market hypothesis
+
+in conclusion:
+  the data is telling us something
+  we just need to listen
+  really listen
+  the kind of listening where you haven't blinked in 45 minutes
+  that's when it speaks
+
+p.s. - recheck the tuesday thing. could be thursday.
+p.p.s. - does anyone else hear the data
+p.p.p.s. - nevermind. good luck everyone. let's build something.
