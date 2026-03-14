@@ -20,12 +20,16 @@ function Sparkline({ data, color }) {
   )
 }
 
-export default function Stocks({ priceHistory, stockName, cryptoName }) {
+export default function Stocks({ priceHistory, stockName, cryptoName, bondName }) {
   return (
     <div className="stocks-panel">
       <div className="sparkline">
         <h4>📈 Stocks — {stockName}</h4>
         <Sparkline data={priceHistory.stocks} color="#4caf50" />
+      </div>
+      <div className="sparkline">
+        <h4>📋 Bond — {bondName}</h4>
+        <Sparkline data={priceHistory.bond} color="#2196f3" />
       </div>
       <div className="sparkline">
         <h4>₿ Crypto — {cryptoName}</h4>

@@ -10,14 +10,19 @@ import Profile from './components/Profile'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const RENT                  = 20    // deducted from cash every second
-const INFLATION_RATE        = 0.005 // cash loses 0.5% every second
-const BANK_INTEREST_RATE    = 0.008 // per second (was 0.04 per 5s tick)
-const DOWN_PAYMENT_FRACTION = 0.20
-const GAME_DURATION         = 60
-const TICK_INTERVAL         = 1
-const TRANSACTION_AMOUNT    = 1000
-const MAX_TICKS             = GAME_DURATION / TICK_INTERVAL  // 60
+const RENT                   = 20
+const INFLATION_RATE         = 0.005
+const BANK_INTEREST_RATE     = 0.008
+const BANK_TAX_RATE          = 0.20   // 20% tax on bank interest
+const LISA_INTEREST_RATE     = 0.009  // tax-free, slightly above bank
+const LISA_MAX_TOTAL         = 20000  // £20k lifetime cap
+const LISA_DEPOSIT_LIMIT     = 4000   // max per deposit window
+const LISA_DEPOSIT_INTERVAL  = 20     // seconds between deposit windows
+const DOWN_PAYMENT_FRACTION  = 0.20
+const GAME_DURATION          = 60
+const TICK_INTERVAL          = 1
+const TRANSACTION_AMOUNT     = 1000
+const MAX_TICKS              = GAME_DURATION / TICK_INTERVAL  // 60
 
 // ─── Market behaviour functions (t = current tick, 0-indexed) ────────────────
 
@@ -28,6 +33,15 @@ const STOCK_FUNCTIONS = [
   { name: 'Slow Burn',     fn: ()  => 0.003 + (Math.random() - 0.5) * 0.002 },
   { name: 'Oscillator',    fn: (t) => 0.005 + 0.018 * Math.sin((t / MAX_TICKS) * Math.PI * 4) + (Math.random() - 0.5) * 0.003 },
   { name: 'Growth Spurt',  fn: (t) => t < MAX_TICKS * 0.6 ? 0.001 + (Math.random() - 0.5) * 0.003 : 0.038 + (Math.random() - 0.5) * 0.008 },
+]
+
+// Bonds: stable, predictable, lower returns — 5 distinct flavours
+const BOND_FUNCTIONS = [
+  { name: 'UK Gilt',       fn: ()  => 0.004 + (Math.random() - 0.5) * 0.001 },
+  { name: 'Corp Bond',     fn: ()  => 0.007 + (Math.random() - 0.5) * 0.004 },
+  { name: 'Junk Bond',     fn: ()  => 0.012 + (Math.random() - 0.5) * 0.010 },
+  { name: 'Index Linked',  fn: (t) => 0.004 + (t / MAX_TICKS) * 0.008 + (Math.random() - 0.5) * 0.002 },
+  { name: 'Premium Bond',  fn: ()  => Math.random() < 0.05 ? 0.20 : 0.001 },
 ]
 
 // Crypto: can and will crash — each function has a distinct character
@@ -55,9 +69,16 @@ function makeInitialState() {
     tickIndex: 0,
     stockFnIndex:  Math.floor(Math.random() * STOCK_FUNCTIONS.length),
     cryptoFnIndex: Math.floor(Math.random() * CRYPTO_FUNCTIONS.length),
+    bondFnIndex:   Math.floor(Math.random() * BOND_FUNCTIONS.length),
+    lisaValue: 0,
+    lisaDeposited: 0,
+    lisaNextDepositTick: 0,
+    bondValue: 0,
+    bondInvested: 0,
     priceHistory: {
       crypto: [1.0],
       stocks: [1.0],
+      bond:   [1.0],
     },
   }
 }
@@ -69,7 +90,12 @@ function tick(state) {
 
   let s = { ...state }
 
-  s.bank *= (1 + BANK_INTEREST_RATE)
+  // Bank: interest minus 20% tax
+  const bankInterest = s.bank * BANK_INTEREST_RATE
+  s.bank += bankInterest * (1 - BANK_TAX_RATE)
+
+  // LISA: tax-free growth
+  s.lisaValue *= (1 + LISA_INTEREST_RATE)
 
   const stockReturn = STOCK_FUNCTIONS[s.stockFnIndex].fn(s.tickIndex)
   s.stocksValue *= (1 + stockReturn)
@@ -79,18 +105,23 @@ function tick(state) {
   s.cryptoValue *= (1 + cryptoReturn)
   const newCryptoPrice = s.priceHistory.crypto.at(-1) * (1 + cryptoReturn)
 
+  const bondReturn = BOND_FUNCTIONS[s.bondFnIndex].fn(s.tickIndex)
+  s.bondValue *= (1 + bondReturn)
+  const newBondPrice = s.priceHistory.bond.at(-1) * (1 + bondReturn)
+
   s.tickIndex += 1
 
   s.priceHistory = {
     stocks: [...s.priceHistory.stocks.slice(-59), newStockPrice],
     crypto: [...s.priceHistory.crypto.slice(-59), newCryptoPrice],
+    bond:   [...s.priceHistory.bond.slice(-59),   newBondPrice],
   }
 
   return s
 }
 
 function netWorth(s) {
-  return s.cash + s.bank + s.cryptoValue + s.stocksValue
+  return s.cash + s.bank + s.cryptoValue + s.stocksValue + s.lisaValue + s.bondValue
 }
 
 function downPaymentNeeded(s) {
@@ -189,13 +220,34 @@ export default function App() {
       return { ...s, cash: s.cash + n, stocksInvested: s.stocksInvested * (1 - fraction), stocksValue: s.stocksValue - n }
     })
 
+  const depositLisa = () =>
+    setState(s => {
+      if (s.tickIndex < s.lisaNextDepositTick) return s
+      if (s.lisaDeposited >= LISA_MAX_TOTAL) return s
+      const n = Math.min(LISA_DEPOSIT_LIMIT, LISA_MAX_TOTAL - s.lisaDeposited)
+      return { ...s, cash: s.cash - n, lisaValue: s.lisaValue + n, lisaDeposited: s.lisaDeposited + n, lisaNextDepositTick: s.tickIndex + LISA_DEPOSIT_INTERVAL }
+    })
+
+  const withdrawLisa = () =>
+    setState(s => s.lisaValue > 0 ? { ...s, cash: s.cash + s.lisaValue, lisaValue: 0 } : s)
+
+  const buyBond = () =>
+    setState(s => ({ ...s, cash: s.cash - TRANSACTION_AMOUNT, bondInvested: s.bondInvested + TRANSACTION_AMOUNT, bondValue: s.bondValue + TRANSACTION_AMOUNT }))
+
+  const sellBond = () =>
+    setState(s => {
+      const n = Math.min(TRANSACTION_AMOUNT, s.bondValue)
+      const fraction = s.bondValue > 0 ? n / s.bondValue : 0
+      return { ...s, cash: s.cash + n, bondInvested: s.bondInvested * (1 - fraction), bondValue: s.bondValue - n }
+    })
+
   const buyHouse = () => {
     if (netWorth(state) >= downPaymentNeeded(state)) {
       setState(s => ({ ...s, won: true }))
     }
   }
 
-  const actionHandlers = { depositBank, withdrawBank, buyCrypto, sellCrypto, buyStocks, sellStocks }
+  const actionHandlers = { depositBank, withdrawBank, buyCrypto, sellCrypto, buyStocks, sellStocks, depositLisa, withdrawLisa, buyBond, sellBond }
 
   const reset = () => {
     setState(makeInitialState())
@@ -255,7 +307,19 @@ export default function App() {
         cryptoPrice={state.priceHistory.crypto.at(-1) * TRANSACTION_AMOUNT}
         stockPrice={state.priceHistory.stocks.at(-1) * TRANSACTION_AMOUNT}
         priceHistory={state.priceHistory}
+        lisaValue={state.lisaValue}
+        lisaDeposited={state.lisaDeposited}
+        lisaCooldown={Math.max(0, state.lisaNextDepositTick - state.tickIndex)}
+        bondValue={state.bondValue}
+        bondInvested={state.bondInvested}
         actionHandlers={actionHandlers}
+      />
+
+      <Stocks
+        priceHistory={state.priceHistory}
+        stockName={STOCK_FUNCTIONS[state.stockFnIndex].name}
+        cryptoName={CRYPTO_FUNCTIONS[state.cryptoFnIndex].name}
+        bondName={BOND_FUNCTIONS[state.bondFnIndex].name}
       />
     </div>
   )

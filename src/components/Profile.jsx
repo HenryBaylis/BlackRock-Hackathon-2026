@@ -49,7 +49,7 @@ class Profile extends React.Component {
         return (
         <section className="profile">
             <h2>Job: {this.state.job}</h2>
-            <p>Cash: ${this.props.cash}</p>
+            <p>Cash: ${Math.floor(this.props.cash)}</p>
             <p>Income: ${this.props.income}</p>
 
             {this.state.showPopup && (
