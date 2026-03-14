@@ -195,3 +195,25 @@
 
   font-family: sans-serif;
 }
+
+.job-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  color: black;
+  font-weight: bold;
+  padding: 20px 30px;
+  border-radius: 12px;
+  border: 3px solid black;
+  font-size: 24px;
+  animation: popupAnim 0.3s ease;
+  z-index: 999;
+}
+
+@keyframes popupAnim {
+  0% { transform: translate(-50%, -60%) scale(0.5); opacity: 0; }
+  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}

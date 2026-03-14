@@ -43,7 +43,7 @@ const CRYPTO_FUNCTIONS = [
 function makeInitialState() {
   return {
     cash: 1000,
-    income: 50,
+    income: 1000,
     bank: 0,
     cryptoInvested: 0,
     cryptoValue: 0,
@@ -95,6 +95,30 @@ function netWorth(s) {
 
 function downPaymentNeeded(s) {
   return s.housePrice * DOWN_PAYMENT_FRACTION
+}
+
+// ─── End screen ──────────────────────────────────────────────────────────────
+
+const RANKS_WITH_AUDIO = ['badass', 'savage', 'sexy']
+
+function EndScreen({ rank, state, nw, dp, onReset }) {
+  useEffect(() => {
+    if (!RANKS_WITH_AUDIO.includes(rank)) return
+    const audio = new Audio(`/dmc/${rank}.mp3`)
+    audio.play()
+    return () => { audio.pause(); audio.currentTime = 0 }
+  }, [rank])
+
+  return (
+    <div className="screen">
+      <img src={`/dmc/${rank}.png`} alt={rank} style={{ width: '25%' }} />
+      {state.won      && <h1>🏠 You bought a house!</h1>}
+      {state.bankrupt && <h1>💸 Bankrupt!</h1>}
+      {!state.won && !state.bankrupt && <h1>⏰ Time's up!</h1>}
+      <p>Net worth: {fmt(nw)} — needed {fmt(dp)}</p>
+      <button onClick={onReset}>{state.won ? 'Play again' : 'Try again'}</button>
+    </div>
+  )
 }
 
 // ─── App ─────────────────────────────────────────────────────────────────────
@@ -182,29 +206,13 @@ export default function App() {
   const dp = downPaymentNeeded(state)
   const progress = Math.min(nw / dp, 1)
 
-  if (state.won) return (
-    <div className="screen">
-      <h1>🏠 You bought a house!</h1>
-      <p>Net worth: {fmt(nw)}</p>
-      <button onClick={reset}>Play again</button>
-    </div>
-  )
-
-  if (state.bankrupt) return (
-    <div className="screen">
-      <h1>💸 Bankrupt!</h1>
-      <p>You ran out of money.</p>
-      <button onClick={reset}>Try again</button>
-    </div>
-  )
-
-  if (timeLeft === 0) return (
-    <div className="screen">
-      <h1>⏰ Time's up!</h1>
-      <p>Net worth: {fmt(nw)} — needed {fmt(dp)}</p>
-      <button onClick={reset}>Try again</button>
-    </div>
-  )
+  if (state.won || state.bankrupt || timeLeft === 0) {
+    const rank = state.won || progress >= 0.75 ? 'sexy'
+      : progress >= 0.5  ? 'savage'
+      : progress >= 0.25 ? 'crazy'
+      : 'badass'
+    return <EndScreen rank={rank} state={state} nw={nw} dp={dp} onReset={reset} />
+  }
 
   return (
     <div className="game">

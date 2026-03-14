@@ -9,6 +9,7 @@ class Profile extends React.Component {
     this.state = {
       name: "John Doe",
       job: jobs[0],
+      showPopup: false, 
       jobs
     };
   }
@@ -23,6 +24,9 @@ class Profile extends React.Component {
             const newIncome = this.props.income * 2
             this.props.setIncome(newIncome)
 
+            // trigger popup
+            this.showJobPopup();
+
             return {
             job: prevState.jobs[nextIndex]
             }
@@ -34,12 +38,25 @@ class Profile extends React.Component {
         clearInterval(this.interval)
     }
 
+    showJobPopup = () => {
+        this.setState({ showPopup: true });
+        setTimeout(() => {
+        this.setState({ showPopup: false });
+        }, 2000); // popup disappears after 2 seconds
+    };
+
     render() {
         return (
         <section className="profile">
             <h2>Job: {this.state.job}</h2>
             <p>Cash: ${this.props.cash}</p>
             <p>Income: ${this.props.income}</p>
+
+            {this.state.showPopup && (
+                <div className="job-popup">
+                    🎉 You Got A New Job! 🎉
+                </div>
+            )}
         </section>
         )
     }
