@@ -12,69 +12,68 @@ export default function AssetList({ cash, bank, cryptoValue, cryptoInvested, sto
     const canAfford = cash >= 10
 
     return (
-        <div className="balances">
-            <div className="balance-card">
-                <h3>💵 Cash</h3>
-                <p>{fmt(Math.floor(cash))}</p>
-                <small>-${RENT}/s rent · -{(INFLATION_RATE * 100).toFixed(1)}% inflation/s</small>
+        <div className="asset-grid">
+            <div className="asset-card" style={{ '--accent': '#4fc3f7' }}>
+                <h2 className="asset-name">🏦 Bank</h2>
+                <div className="asset-price">{fmt(bank)}</div>
+                <div className="asset-value">+{(BANK_INTEREST_RATE * 100).toFixed(1)}%/s interest · {BANK_TAX_RATE * 100}% tax</div>
+                <div className="btn-row">
+                    <button className="btn-sell" onClick={actionHandlers.withdrawBank} disabled={bank <= 0}>Withdraw</button>
+                    <button className="btn-buy" onClick={actionHandlers.depositBank} disabled={!canAfford}>Deposit</button>
+                </div>
             </div>
-            <div className="balance-card">
-                <h3>🏦 Bank</h3>
-                <p>{fmt(bank)}</p>
-                <small>+{(BANK_INTEREST_RATE * 100).toFixed(0)}% interest · {BANK_TAX_RATE * 100}% tax</small>
-                <button onClick={actionHandlers.depositBank} disabled={!canAfford}>Deposit</button>
-                <button onClick={actionHandlers.withdrawBank} disabled={bank <= 0}>Withdraw</button>
+            <div className="asset-card" style={{ '--accent': '#42c98a' }}>
+                <h2 className="asset-name">💰 ISA</h2>
+                <div className="asset-price">{fmt(isaValue)}</div>
+                <div className="asset-value">Tax-free · freely withdrawable</div>
+                <div className="btn-row">
+                    <button className="btn-sell" onClick={actionHandlers.withdrawIsa} disabled={isaValue <= 0}>Withdraw</button>
+                    <button className="btn-buy" onClick={actionHandlers.depositIsa} disabled={!canAfford}>Deposit</button>
+                </div>
             </div>
-            <div className="balance-card">
-                <h3>💰 ISA</h3>
-                <p>{fmt(isaValue)}</p>
-                <small>Tax-free savings · freely withdrawable</small>
-                <button onClick={actionHandlers.depositIsa} disabled={!canAfford}>Deposit</button>
-                <button onClick={actionHandlers.withdrawIsa} disabled={isaValue <= 0}>Withdraw</button>
+            <div className="asset-card" style={{ '--accent': '#ce93d8' }}>
+                <h2 className="asset-name">🏛️ Lifetime ISA</h2>
+                <div className="asset-price">{fmt(lisaValue)}</div>
+                <div className="asset-value"><span>{fmt(lisaDeposited)}</span> / {fmt(LISA_MAX_TOTAL)} deposited · locked for house</div>
+                <div className="btn-row" style={{ gridTemplateColumns: '1fr' }}>
+                    <button className="btn-buy" onClick={actionHandlers.depositLisa} disabled={!canAfford || lisaCooldown > 0 || lisaDeposited >= LISA_MAX_TOTAL}>
+                        Deposit £{LISA_DEPOSIT_LIMIT.toLocaleString()}{lisaCooldown > 0 ? ` (${lisaCooldown}s)` : ''}
+                    </button>
+                </div>
             </div>
-            <div className="balance-card">
-                <h3>🏛️ Lifetime ISA</h3>
-                <p>{fmt(lisaValue)}</p>
-                <small>Tax-free · locked for house purchase · {fmt(lisaDeposited)}/{fmt(LISA_MAX_TOTAL)}</small>
-                <button onClick={actionHandlers.depositLisa} disabled={!canAfford || lisaCooldown > 0 || lisaDeposited >= LISA_MAX_TOTAL}>
-                    Deposit {fmt(LISA_DEPOSIT_LIMIT)}{lisaCooldown > 0 ? ` (${lisaCooldown}s)` : ''}
-                </button>
-            </div>
-            <div className="assets">
-                <Asset
-                    assetName="₿ Crypto"
-                    value={cryptoValue}
-                    invested={cryptoInvested}
-                    currPrice={cryptoPrice}
-                    onBuy={actionHandlers.buyCrypto}
-                    onSell={actionHandlers.sellCrypto}
-                    canBuy={canAfford}
-                    priceHistory={priceHistory.crypto}
-                    color="#ff9800"
-                />
-                <Asset
-                    assetName="📈 Stocks"
-                    value={stocksValue}
-                    invested={stocksInvested}
-                    currPrice={stockPrice}
-                    onBuy={actionHandlers.buyStocks}
-                    onSell={actionHandlers.sellStocks}
-                    canBuy={canAfford}
-                    priceHistory={priceHistory.stocks}
-                    color="#4caf50"
-                />
-                <Asset
-                    assetName="📋 Bond"
-                    value={bondValue}
-                    invested={bondInvested}
-                    currPrice={bondValue}
-                    onBuy={actionHandlers.buyBond}
-                    onSell={actionHandlers.sellBond}
-                    canBuy={canAfford}
-                    priceHistory={priceHistory.bond}
-                    color="#2196f3"
-                />
-            </div>
+            <Asset
+                assetName="₿ Crypto"
+                value={cryptoValue}
+                invested={cryptoInvested}
+                currPrice={cryptoPrice}
+                onBuy={actionHandlers.buyCrypto}
+                onSell={actionHandlers.sellCrypto}
+                canBuy={canAfford}
+                priceHistory={priceHistory.crypto}
+                color="#ff9800"
+            />
+            <Asset
+                assetName="📈 Stocks"
+                value={stocksValue}
+                invested={stocksInvested}
+                currPrice={stockPrice}
+                onBuy={actionHandlers.buyStocks}
+                onSell={actionHandlers.sellStocks}
+                canBuy={canAfford}
+                priceHistory={priceHistory.stocks}
+                color="#4caf50"
+            />
+            <Asset
+                assetName="📋 Bond"
+                value={bondValue}
+                invested={bondInvested}
+                currPrice={bondValue}
+                onBuy={actionHandlers.buyBond}
+                onSell={actionHandlers.sellBond}
+                canBuy={canAfford}
+                priceHistory={priceHistory.bond}
+                color="#2196f3"
+            />
         </div>
     )
 }

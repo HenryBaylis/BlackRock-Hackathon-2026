@@ -39,7 +39,7 @@ const SECTIONS = [
   },
   {
     title: '🏆 Ranks',
-    body: `Your performance is judged at the end:\n• Sexy — 75%+ of target (or win)\n• Savage — 50–74%\n• Crazy — 25–49%\n• Badass — under 25%`,
+    body: `Your performance is judged at the end:\n• Sexy — 75%+ of target (or win)\n• Savage — 50–74%\n• Badass — 25–49%\n• Crazy — under 25%`,
   },
 ]
 

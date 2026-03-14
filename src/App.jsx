@@ -29,36 +29,36 @@ const MAX_TICKS              = GAME_DURATION / TICK_INTERVAL  // 60
 
 // Stocks: always net upward, no crashes — just different growth shapes
 const STOCK_FUNCTIONS = [
-  { name: 'Steady Growth', fn: ()  => 0.008 + (Math.random() - 0.5) * 0.006 },
-  { name: 'Bull Run',      fn: (t) => 0.001 + (t / MAX_TICKS) * 0.024 + (Math.random() - 0.5) * 0.004 },
-  { name: 'Slow Burn',     fn: ()  => 0.003 + (Math.random() - 0.5) * 0.002 },
-  { name: 'Oscillator',    fn: (t) => 0.005 + 0.018 * Math.sin((t / MAX_TICKS) * Math.PI * 4) + (Math.random() - 0.5) * 0.003 },
-  { name: 'Growth Spurt',  fn: (t) => t < MAX_TICKS * 0.6 ? 0.001 + (Math.random() - 0.5) * 0.003 : 0.038 + (Math.random() - 0.5) * 0.008 },
+  { name: 'Steady Growth', fn: ()  => 0.018 + (Math.random() - 0.5) * 0.020 },
+  { name: 'Bull Run',      fn: (t) => 0.004 + (t / MAX_TICKS) * 0.060 + (Math.random() - 0.5) * 0.016 },
+  { name: 'Slow Burn',     fn: ()  => 0.008 + (Math.random() - 0.5) * 0.010 },
+  { name: 'Oscillator',    fn: (t) => 0.010 + 0.045 * Math.sin((t / MAX_TICKS) * Math.PI * 4) + (Math.random() - 0.5) * 0.012 },
+  { name: 'Growth Spurt',  fn: (t) => t < MAX_TICKS * 0.6 ? 0.003 + (Math.random() - 0.5) * 0.012 : 0.080 + (Math.random() - 0.5) * 0.025 },
 ]
 
 // Bonds: stable, predictable, lower returns — 5 distinct flavours
 const BOND_FUNCTIONS = [
-  { name: 'UK Gilt',       fn: ()  => 0.004 + (Math.random() - 0.5) * 0.001 },
-  { name: 'Corp Bond',     fn: ()  => 0.007 + (Math.random() - 0.5) * 0.004 },
-  { name: 'Junk Bond',     fn: ()  => 0.012 + (Math.random() - 0.5) * 0.010 },
-  { name: 'Index Linked',  fn: (t) => 0.004 + (t / MAX_TICKS) * 0.008 + (Math.random() - 0.5) * 0.002 },
-  { name: 'Premium Bond',  fn: ()  => Math.random() < 0.05 ? 0.20 : 0.001 },
+  { name: 'UK Gilt',       fn: ()  => 0.010 + (Math.random() - 0.5) * 0.006 },
+  { name: 'Corp Bond',     fn: ()  => 0.018 + (Math.random() - 0.5) * 0.014 },
+  { name: 'Junk Bond',     fn: ()  => 0.028 + (Math.random() - 0.5) * 0.030 },
+  { name: 'Index Linked',  fn: (t) => 0.010 + (t / MAX_TICKS) * 0.025 + (Math.random() - 0.5) * 0.010 },
+  { name: 'Premium Bond',  fn: ()  => Math.random() < 0.05 ? 0.35 : 0.002 },
 ]
 
 // Crypto: can and will crash — each function has a distinct character
 const CRYPTO_FUNCTIONS = [
-  { name: 'Moon Shot',   fn: ()  => 0.025 + (Math.random() - 0.5) * 0.050 },
-  { name: 'Rug Pull',    fn: (t) => t < MAX_TICKS * 0.6 ? 0.030 + (Math.random() - 0.5) * 0.020 : -0.045 + (Math.random() - 0.5) * 0.025 },
-  { name: 'Crash',       fn: ()  => -0.015 + (Math.random() - 0.5) * 0.035 },
-  { name: 'Volatile',    fn: ()  => (Math.random() - 0.5) * 0.080 },
-  { name: 'Pump & Dump', fn: (t) => t < MAX_TICKS * 0.35 ? 0.045 + (Math.random() - 0.5) * 0.015 : t < MAX_TICKS * 0.65 ? (Math.random() - 0.5) * 0.020 : -0.040 + (Math.random() - 0.5) * 0.020 },
+  { name: 'Moon Shot',   fn: ()  => 0.055 + (Math.random() - 0.5) * 0.100 },
+  { name: 'Rug Pull',    fn: (t) => t < MAX_TICKS * 0.6 ? 0.065 + (Math.random() - 0.5) * 0.040 : -0.090 + (Math.random() - 0.5) * 0.050 },
+  { name: 'Crash',       fn: ()  => -0.030 + (Math.random() - 0.5) * 0.070 },
+  { name: 'Volatile',    fn: ()  => (Math.random() - 0.5) * 0.160 },
+  { name: 'Pump & Dump', fn: (t) => t < MAX_TICKS * 0.35 ? 0.090 + (Math.random() - 0.5) * 0.030 : t < MAX_TICKS * 0.65 ? (Math.random() - 0.5) * 0.040 : -0.080 + (Math.random() - 0.5) * 0.040 },
 ]
 
 
 function makeInitialState() {
   return {
     cash: 1000,
-    income: 1000,
+    income: 50,
     bank: 0,
     cryptoInvested: 0,
     cryptoValue: 0,
@@ -67,6 +67,7 @@ function makeInitialState() {
     housePrice: 300000,
     won: false,
     bankrupt: false,
+    ended: false,
     tickIndex: 0,
     stockFnIndex:  Math.floor(Math.random() * STOCK_FUNCTIONS.length),
     cryptoFnIndex: Math.floor(Math.random() * CRYPTO_FUNCTIONS.length),
@@ -162,15 +163,17 @@ function EndScreen({ rank, state, nw, dp, onReset }) {
 export default function App() {
   const [state, setState] = useState(makeInitialState)
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION)
+  const [started, setStarted] = useState(false)
 
   // 60-second game countdown — at 0 resolve win/loss
   useEffect(() => {
+    if (!started) return
     const id = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
           setState(s => {
-            if (s.won) return s
-            return { ...s, won: netWorth(s) >= downPaymentNeeded(s) }
+            if (s.won || s.bankrupt) return s
+            return { ...s, ended: true, won: netWorth(s) >= downPaymentNeeded(s) }
           })
           return 0
         }
@@ -178,20 +181,21 @@ export default function App() {
       })
     }, 1000)
     return () => clearInterval(id)
-  }, [])
+  }, [started])
 
   // Every second: drain cash (rent + inflation) and update markets
   useEffect(() => {
+    if (!started) return
     const id = setInterval(() => {
       setState(s => {
-        if (s.won || s.bankrupt) return s
+        if (s.won || s.bankrupt || s.ended) return s
         const drained = { ...s, cash: s.cash * (1 - INFLATION_RATE) - RENT }
         const next = tick(drained)
         return next.cash < 0 ? { ...next, bankrupt: true } : next
       })
     }, 1000)
     return () => clearInterval(id)
-  }, [])
+  }, [started])
 
 
   const handleCookie = () => setState(s => ({ ...s, cash: s.cash + s.income }))
@@ -264,24 +268,34 @@ export default function App() {
   const reset = () => {
     setState(makeInitialState())
     setTimeLeft(GAME_DURATION)
+    setStarted(false)
   }
 
   const nw = netWorth(state)
   const dp = downPaymentNeeded(state)
   const progress = Math.min(nw / dp, 1)
 
+  if (!started) {
+    return (
+      <div className="screen">
+        <h1>🏠 House Hustle</h1>
+        <p>You have 60 seconds to save a £60,000 down payment.<br />Invest wisely. Click fast. Buy the house.</p>
+        <button onClick={() => setStarted(true)}>Start Game</button>
+      </div>
+    )
+  }
+
   if (state.won || state.bankrupt || timeLeft === 0) {
     const rank = state.won || progress >= 0.75 ? 'sexy'
       : progress >= 0.5  ? 'savage'
-      : progress >= 0.25 ? 'crazy'
-      : 'badass'
+      : progress >= 0.25 ? 'badass'
+      : 'crazy'
     return <EndScreen rank={rank} state={state} nw={nw} dp={dp} onReset={reset} />
   }
 
   return (
     <div className="game">
       <header>
-        <span>Net worth: {fmt(nw)}</span>
         <Timer timeLeft={timeLeft} />
         <Learn />
       </header>
@@ -296,9 +310,10 @@ export default function App() {
           🏠 Buy House ({fmt(dp)} down payment needed)
         </button>
       </div>
-      <Profile 
+      <Profile
         cash={state.cash}
         income={state.income}
+        netWorth={nw}
         setIncome={(newIncome) =>
           setState(prev => ({
             ...prev,

@@ -1,5 +1,6 @@
-.assets {
-    display: flex;
+.asset-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 220px);
     gap: 24px;
     justify-content: center;
 }
