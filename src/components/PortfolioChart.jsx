@@ -48,6 +48,11 @@ export default function PortfolioChart( { newPoint } ){
   }, [newPoint]);
 
   return(
-    <div ref={chartRef} />
+    <div ref={chartRef} 
+      style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+    }}/>
   )
 }
