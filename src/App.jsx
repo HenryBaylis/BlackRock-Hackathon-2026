@@ -5,6 +5,7 @@ import Timer from './components/Timer'
 import AssetList from './components/AssetList'
 import Cookie from './components/Cookie'
 import Stocks from './components/Stocks'
+import BriefcaseButton from './components/Briefcase'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -222,7 +223,9 @@ export default function App() {
         </button>
       </div>
 
-      <Cookie onClick={handleCookie} />
+      <BriefcaseButton 
+        addCash={handleCookie}
+      />
 
       <AssetList
         cash={state.cash}
