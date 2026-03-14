@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import { fmt } from './utils'
 import Timer from './components/Timer'
@@ -7,6 +7,7 @@ import AssetList from './components/AssetList'
 import Cookie from './components/Cookie'
 import BriefcaseButton from './components/Briefcase'
 import Profile from './components/Profile'
+import PortfolioChart from './components/PortfolioChart'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -211,6 +212,8 @@ export default function App() {
   const [state, setState] = useState(makeInitialState)
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION)
   const [started, setStarted] = useState(false)
+  const [latestCandle, setLatestCandle] = useState(null)
+  const prevNwRef = useRef(1000)
 
   // 60-second game countdown — at 0 resolve win/loss
   useEffect(() => {
@@ -238,7 +241,20 @@ export default function App() {
         if (s.won || s.bankrupt || s.ended) return s
         const drained = { ...s, cash: s.cash * (1 - INFLATION_RATE) - RENT }
         const next = tick(drained)
-        return next.cash < 0 ? { ...next, bankrupt: true } : next
+        const result = next.cash < 0 ? { ...next, bankrupt: true } : next
+
+        const open = prevNwRef.current
+        const close = netWorth(result)
+        prevNwRef.current = close
+        setLatestCandle({
+          time: result.tickIndex,
+          open,
+          high: Math.max(open, close),
+          low:  Math.min(open, close),
+          close,
+        })
+
+        return result
       })
     }, 1000)
     return () => clearInterval(id)
@@ -314,6 +330,8 @@ export default function App() {
     setState(makeInitialState())
     setTimeLeft(GAME_DURATION)
     setStarted(false)
+    setLatestCandle(null)
+    prevNwRef.current = 1000
   }
 
   const nw = netWorth(state)
@@ -369,6 +387,8 @@ export default function App() {
       <BriefcaseButton 
         addCash={handleCookie}
       />
+
+      <PortfolioChart newPoint={latestCandle} />
 
       <AssetList
         cash={state.cash}
