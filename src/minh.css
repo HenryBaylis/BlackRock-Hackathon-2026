@@ -149,3 +149,14 @@ button:disabled {
 .screen h1 {
     color: white;
 }
+
+section.profile {
+    background-color: #0d0f12;
+    font-family: 'DM Mono', monospace, sans-serif;
+    color: white;
+}
+
+section.profile h2 {
+    font-family: 'DM Mono', monospace, sans-serif;
+    color: white;
+}
