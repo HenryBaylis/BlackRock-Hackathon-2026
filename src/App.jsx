@@ -369,6 +369,26 @@ export default function App() {
 
       <div className="game-body">
         <div className="left-panel">
+          <AssetList
+            cash={state.cash}
+            bank={state.bank}
+            cryptoValue={state.cryptoValue}
+            cryptoInvested={state.cryptoInvested}
+            stocksValue={state.stocksValue}
+            stocksInvested={state.stocksInvested}
+            cryptoPrice={state.priceHistory.crypto.at(-1) * TRANSACTION_AMOUNT}
+            stockPrice={state.priceHistory.stocks.at(-1) * TRANSACTION_AMOUNT}
+            priceHistory={state.priceHistory}
+            isaValue={state.isaValue}
+            lisaValue={state.lisaValue}
+            lisaDeposited={state.lisaDeposited}
+            lisaCooldown={Math.max(0, state.lisaNextDepositTick - state.tickIndex)}
+            bonds={state.bonds}
+            tickIndex={state.tickIndex}
+            actionHandlers={actionHandlers}
+          />
+        </div>
+        <div className="centre-panel">
           <div className="house-progress">
             <p>Down payment: {fmt(nw)} / {fmt(dp)}</p>
             <div className="progress-bar">
@@ -389,24 +409,6 @@ export default function App() {
             }))
           }/>
           <BriefcaseButton addCash={handleCookie} />
-          <AssetList
-            cash={state.cash}
-            bank={state.bank}
-            cryptoValue={state.cryptoValue}
-            cryptoInvested={state.cryptoInvested}
-            stocksValue={state.stocksValue}
-            stocksInvested={state.stocksInvested}
-            cryptoPrice={state.priceHistory.crypto.at(-1) * TRANSACTION_AMOUNT}
-            stockPrice={state.priceHistory.stocks.at(-1) * TRANSACTION_AMOUNT}
-            priceHistory={state.priceHistory}
-            isaValue={state.isaValue}
-            lisaValue={state.lisaValue}
-            lisaDeposited={state.lisaDeposited}
-            lisaCooldown={Math.max(0, state.lisaNextDepositTick - state.tickIndex)}
-            bonds={state.bonds}
-            tickIndex={state.tickIndex}
-            actionHandlers={actionHandlers}
-          />
         </div>
         <div className="right-panel">
           <PortfolioChart newPoint={latestCandle} />

@@ -191,8 +191,13 @@
 }
 
 .left-panel {
+  flex-shrink: 0;
+}
+
+.centre-panel {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 16px;
   flex-shrink: 0;
 }
