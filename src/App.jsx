@@ -246,13 +246,8 @@ export default function App() {
         stocksInvested={state.stocksInvested}
         cryptoPrice={state.priceHistory.crypto.at(-1) * TRANSACTION_AMOUNT}
         stockPrice={state.priceHistory.stocks.at(-1) * TRANSACTION_AMOUNT}
-        actionHandlers={actionHandlers}
-      />
-
-      <Stocks
         priceHistory={state.priceHistory}
-        stockName={STOCK_FUNCTIONS[state.stockFnIndex].name}
-        cryptoName={CRYPTO_FUNCTIONS[state.cryptoFnIndex].name}
+        actionHandlers={actionHandlers}
       />
     </div>
   )
