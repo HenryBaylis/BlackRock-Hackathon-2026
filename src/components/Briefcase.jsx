@@ -42,14 +42,14 @@ class BriefcaseButton extends React.Component {
       }));
     }, 100); // short delay to trigger transition
 
-    // remove cash after animation
-    setTimeout(() => {
-      this.setState({ cashList: [] });
-    }, 1200);
-
     setTimeout(() => {
       this.setState({ isPressed: false });
     }, 100);
+
+    // remove cash after animation
+    setTimeout(() => {
+      this.setState({ cashList: [] });
+    }, 60000);
   };
 
   render() {
@@ -57,7 +57,7 @@ class BriefcaseButton extends React.Component {
       width: "200px",
       cursor: "pointer",
       transform: this.state.isPressed ? "scale(0.85)" : "scale(1)",
-      transition: "transform 0.1s"
+      transition: "transform 0.1s",
     };
 
     const containerStyle = {
