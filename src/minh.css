@@ -149,3 +149,11 @@ button:disabled {
 .screen h1 {
     color: white;
 }
+
+.screen p {
+    color: white;
+}
+
+.house-progress {
+    color: white;
+}

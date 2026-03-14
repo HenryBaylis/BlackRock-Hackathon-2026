@@ -4,10 +4,10 @@ import { fmt } from './utils'
 import Timer from './components/Timer'
 import Learn from './components/Learn'
 import AssetList from './components/AssetList'
-import Cookie from './components/Cookie'
 import BriefcaseButton from './components/Briefcase'
 import Profile from './components/Profile'
 import PortfolioChart from './components/PortfolioChart'
+import './minh.css'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 // The game runs for 60 seconds. Each second is one "tick".
@@ -425,7 +425,7 @@ export default function App() {
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${progress * 100}%` }} />
         </div>
-        <button onClick={buyHouse} disabled={nw < dp}>
+        <button onClick={buyHouse} disabled={nw < dp} style={{color: "white"}}>
           🏠 Buy House ({fmt(dp)} down payment needed)
         </button>
       </div>
