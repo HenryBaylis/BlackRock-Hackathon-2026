@@ -1,4 +1,14 @@
 import { useState } from 'react'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
+
+function Eq({ tex }) {
+  return <span dangerouslySetInnerHTML={{ __html: katex.renderToString(tex, { throwOnError: false }) }} />
+}
+
+function BlockEq({ tex }) {
+  return <div style={{ margin: '6px 0' }} dangerouslySetInnerHTML={{ __html: katex.renderToString(tex, { throwOnError: false, displayMode: true }) }} />
+}
 
 const SECTIONS = [
   {
@@ -43,6 +53,34 @@ const SECTIONS = [
   },
 ]
 
+function Equations() {
+  return (
+    <div className="learn-section">
+      <h3>📐 Market Equations</h3>
+      <p style={{ marginBottom: '0.6rem', fontSize: '0.8rem', opacity: 0.7 }}>
+        All values are per-tick return rates. <Eq tex="r_t" /> is applied as <Eq tex="\text{value} \times (1 + r_t)" /> each second.
+      </p>
+
+      <p style={{ fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.2rem' }}>Stocks</p>
+      <BlockEq tex="\text{Steady Growth:}\quad r_t = 0.012 + \mathcal{U}(-0.008,\,0.008)" />
+      <BlockEq tex="\text{Bull Run:}\quad r_t = 0.003 + \frac{t}{60}(0.040) + \mathcal{U}(-0.007,\,0.007)" />
+      <BlockEq tex="\text{Slow Burn:}\quad r_t = 0.006 + \mathcal{U}(-0.004,\,0.004)" />
+      <BlockEq tex="\text{Oscillator:}\quad r_t = 0.008 + 0.030\sin\!\left(\frac{4\pi t}{60}\right) + \mathcal{U}(-0.005,\,0.005)" />
+      <BlockEq tex="\text{Growth Spurt:}\quad r_t = \begin{cases} 0.002 + \mathcal{U}(-0.005,\,0.005) & t < 36 \\ 0.055 + \mathcal{U}(-0.010,\,0.010) & t \geq 36 \end{cases}" />
+
+      <p style={{ fontSize: '0.85rem', fontWeight: 600, margin: '0.8rem 0 0.2rem' }}>Crypto</p>
+      <BlockEq tex="\text{Moon Shot:}\quad r_t = \begin{cases} 0.025 + \mathcal{U}(-0.190,\,0.190) & t < 39 \\ -0.40 + \mathcal{U}(-0.050,\,0.050) & t \geq 39 \end{cases}" />
+      <BlockEq tex="\text{Rug Pull:}\quad r_t = \begin{cases} 0.030 + \mathcal{U}(-0.170,\,0.170) & t < 33 \\ -0.42 + \mathcal{U}(-0.045,\,0.045) & t \geq 33 \end{cases}" />
+      <BlockEq tex="\text{Early Crash:}\quad r_t = \begin{cases} -0.48 + \mathcal{U}(-0.050,\,0.050) & t < 12 \\ -0.008 + \mathcal{U}(-0.030,\,0.030) & t \geq 12 \end{cases}" />
+      <BlockEq tex="\text{Volatile:}\quad r_t = \begin{cases} 0.020 + \mathcal{U}(-0.230,\,0.230) & t < 30 \\ -0.40 + \mathcal{U}(-0.055,\,0.055) & t \geq 30 \end{cases}" />
+      <BlockEq tex="\text{Pump \& Dump:}\quad r_t = \begin{cases} 0.035 + \mathcal{U}(-0.200,\,0.200) & t < 18 \\ -0.44 + \mathcal{U}(-0.045,\,0.045) & t \geq 18 \end{cases}" />
+      <p style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: '0.4rem' }}>
+        Crypto price capped at <Eq tex="2\times" /> starting value. <Eq tex="\mathcal{U}(a,b)" /> = uniform random on <Eq tex="[a,\,b]" />.
+      </p>
+    </div>
+  )
+}
+
 export default function Learn() {
   const [open, setOpen] = useState(false)
 
@@ -61,6 +99,7 @@ export default function Learn() {
                 <p>{s.body}</p>
               </div>
             ))}
+            <Equations />
           </div>
         </div>
       )}
