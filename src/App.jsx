@@ -155,6 +155,23 @@ function netWorth(s) {
   return s.cash + s.bank + s.isaValue + s.cryptoValue + s.stocksValue + s.lisaValue + bondsTotal
 }
 
+function profitWorth(s, stocksProfit, cryptoProfit, bondProfit){
+
+  if(s.bondsInvested !== 0){
+    bondProfit.current = s.bondsReturned + s.bonds.reduce((sum, b) => sum + b.value, 0) - s.bondsInvested;
+  }
+
+  if(s.cryptoInvested !== 0){
+    cryptoProfit.current = s.cryptoValue - s.cryptoInvested;
+  }
+
+  if(s.stockInvested !== 0){
+    stocksProfit.current = s.stocksValue - s.stocksInvested;
+  }
+
+  return s.bankProfit + s.isaProfit + cryptoProfit.current + stocksProfit.current + bondProfit.current + s.lisaProfit
+}
+
 function downPaymentNeeded(s) {
   return s.housePrice * DOWN_PAYMENT_FRACTION
 }
@@ -215,6 +232,9 @@ export default function App() {
   const [latestCandle, setLatestCandle] = useState(null)
   const prevNwRef = useRef(1000)
   const gameStartTimeRef = useRef(0)
+  const cryptoProfit = useRef(0);
+  const stocksProfit = useRef(0);
+  const bondProfit = useRef(0);
 
   // 60-second game countdown — at 0 resolve win/loss
   useEffect(() => {
@@ -252,7 +272,7 @@ export default function App() {
   useEffect(() => {
     if (!started || state.tickIndex === 0) return
     const open = prevNwRef.current
-    const close = netWorth(state)
+    const close = profitWorth(state, stocksProfit, cryptoProfit, bondProfit);
     prevNwRef.current = close
     setLatestCandle({
       time: gameStartTimeRef.current + state.tickIndex,
