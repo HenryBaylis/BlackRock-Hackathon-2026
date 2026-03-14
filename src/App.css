@@ -182,3 +182,148 @@
     border-right-color: var(--border);
   }
 }
+
+.profile {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid black;
+  border-radius: 8px;
+
+  font-family: sans-serif;
+}
+
+.job-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: white;
+  color: black;
+  font-weight: bold;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 2px solid black;
+  font-size: 14px;
+  white-space: nowrap;
+  animation: popupAnim 0.3s ease;
+  z-index: 999;
+}
+
+@keyframes popupAnim {
+  0% { transform: translate(-50%, -60%) scale(0.5); opacity: 0; }
+  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+/* ─── End screen analytics ──────────────────────────────────────────────── */
+
+.analytics {
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 0.95rem;
+}
+
+.analytics td {
+  padding: 4px 16px 4px 0;
+}
+
+/* ─── End screen advice ─────────────────────────────────────────────────── */
+
+.advice-section {
+  margin: 16px 0;
+  text-align: left;
+  max-width: 480px;
+}
+
+.advice-section h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.advice-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.advice-emoji {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.advice-item p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
+/* ─── Learn overlay ──────────────────────────────────────────────────────── */
+
+.learn-btn {
+  margin-left: auto;
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.learn-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.learn-modal {
+  background: #1e1e2e;
+  color: #cdd6f4;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 540px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.learn-modal h2 {
+  margin: 0 0 1.2rem;
+  font-size: 1.4rem;
+}
+
+.learn-section {
+  margin-bottom: 1.2rem;
+}
+
+.learn-section h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1rem;
+}
+
+.learn-section p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  opacity: 0.85;
+  white-space: pre-line;
+}
+
+.learn-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #cdd6f4;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
