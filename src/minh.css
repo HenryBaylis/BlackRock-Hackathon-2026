@@ -150,6 +150,14 @@ button:disabled {
     color: white;
 }
 
+.screen p {
+    color: white;
+}
+
+.house-progress {
+    color: white;
+}
+
 section.profile {
     background-color: #0d0f12;
     font-family: 'DM Mono', monospace, sans-serif;

@@ -4,10 +4,10 @@ import { fmt } from './utils'
 import Timer from './components/Timer'
 import Learn from './components/Learn'
 import AssetList from './components/AssetList'
-import Cookie from './components/Cookie'
 import BriefcaseButton from './components/Briefcase'
 import Profile from './components/Profile'
 import PortfolioChart from './components/PortfolioChart'
+import './minh.css'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 // The game runs for 60 seconds. Each second is one "tick".
@@ -34,13 +34,13 @@ const MAX_TICKS              = GAME_DURATION / TICK_INTERVAL  // 60 ticks total
 // so the player doesn't know which behaviour they're dealing with.
 
 // Stocks: always trend upward overall — no crashes, just different growth shapes.
-// The base return is positive; noise adds variability but can't sustain a crash.
+// Toned down from previous values so stocks don't completely dominate other assets.
 const STOCK_FUNCTIONS = [
-  { name: 'Steady Growth', fn: ()  => 0.018 + (Math.random() - 0.5) * 0.020 },                                                              // consistent ~1.8%/tick with mild noise
-  { name: 'Bull Run',      fn: (t) => 0.004 + (t / MAX_TICKS) * 0.060 + (Math.random() - 0.5) * 0.016 },                                    // accelerates over time — patience is rewarded
-  { name: 'Slow Burn',     fn: ()  => 0.008 + (Math.random() - 0.5) * 0.010 },                                                              // modest steady gains, low noise
-  { name: 'Oscillator',    fn: (t) => 0.010 + 0.045 * Math.sin((t / MAX_TICKS) * Math.PI * 4) + (Math.random() - 0.5) * 0.012 },            // cycles up and down but net positive — timing matters
-  { name: 'Growth Spurt',  fn: (t) => t < MAX_TICKS * 0.6 ? 0.003 + (Math.random() - 0.5) * 0.012 : 0.080 + (Math.random() - 0.5) * 0.025 }, // flat early, then rockets in the final stretch
+  { name: 'Steady Growth', fn: ()  => 0.012 + (Math.random() - 0.5) * 0.016 },                                                              // consistent ~1.2%/tick with mild noise
+  { name: 'Bull Run',      fn: (t) => 0.003 + (t / MAX_TICKS) * 0.040 + (Math.random() - 0.5) * 0.014 },                                    // accelerates over time — patience is rewarded
+  { name: 'Slow Burn',     fn: ()  => 0.006 + (Math.random() - 0.5) * 0.008 },                                                              // modest steady gains, low noise
+  { name: 'Oscillator',    fn: (t) => 0.008 + 0.030 * Math.sin((t / MAX_TICKS) * Math.PI * 4) + (Math.random() - 0.5) * 0.010 },            // cycles up and down but net positive — timing matters
+  { name: 'Growth Spurt',  fn: (t) => t < MAX_TICKS * 0.6 ? 0.002 + (Math.random() - 0.5) * 0.010 : 0.055 + (Math.random() - 0.5) * 0.020 }, // flat early, then rockets in the final stretch
 ]
 
 // Bonds: locked for a fixed term (10s or 20s), lower but reliable returns.
@@ -54,20 +54,20 @@ const BOND_FUNCTIONS = [
 ]
 
 // Crypto: all 5 behaviours eventually crash — the only question is when.
-// Pre-crash: chaotic oscillation (can spike up or down wildly each tick).
+// Pre-crash: upward trend with large noise — volatile but generally worth holding until the crash.
 // Post-crash: sustained heavy losses of ~40%+/tick, wiping out most of the value.
 // The price is capped at 2x to prevent runaway gains; the crash is uncapped downward.
 const CRYPTO_FUNCTIONS = [
-  // Moon Shot: violent swings either way, then collapses hard at tick 39 (65%)
-  { name: 'Moon Shot',   fn: (t) => t < MAX_TICKS * 0.65 ? (Math.random() - 0.5) * 0.420 : -0.40 + (Math.random() - 0.5) * 0.100 },
-  // Rug Pull: slight upward bias with huge noise, then floor drops at tick 33 (55%)
-  { name: 'Rug Pull',    fn: (t) => t < MAX_TICKS * 0.55 ? 0.010 + (Math.random() - 0.5) * 0.380 : -0.42 + (Math.random() - 0.5) * 0.090 },
-  // Early Crash: obliterated immediately in the first 12 ticks (20%), then slow bleed
+  // Moon Shot: strong upward bias with wild swings, then collapses hard at tick 39 (65%)
+  { name: 'Moon Shot',   fn: (t) => t < MAX_TICKS * 0.65 ? 0.025 + (Math.random() - 0.5) * 0.380 : -0.40 + (Math.random() - 0.5) * 0.100 },
+  // Rug Pull: steady upward trend with large noise, floor drops at tick 33 (55%)
+  { name: 'Rug Pull',    fn: (t) => t < MAX_TICKS * 0.55 ? 0.030 + (Math.random() - 0.5) * 0.340 : -0.42 + (Math.random() - 0.5) * 0.090 },
+  // Early Crash: obliterated immediately in the first 12 ticks (20%), then slow bleed — the one to avoid
   { name: 'Early Crash', fn: (t) => t < MAX_TICKS * 0.20 ? -0.48 + (Math.random() - 0.5) * 0.100 : -0.008 + (Math.random() - 0.5) * 0.060 },
-  // Volatile: pure chaos (±25%/tick), rug pull at tick 30 (50%)
-  { name: 'Volatile',    fn: (t) => t < MAX_TICKS * 0.50 ? (Math.random() - 0.5) * 0.500 : -0.40 + (Math.random() - 0.5) * 0.110 },
-  // Pump & Dump: spiky rise early, then dumps hard at tick 18 (30%) — punishes late buyers
-  { name: 'Pump & Dump', fn: (t) => t < MAX_TICKS * 0.30 ? 0.015 + (Math.random() - 0.5) * 0.440 : -0.44 + (Math.random() - 0.5) * 0.090 },
+  // Volatile: upward bias with massive swings, rug pull at tick 30 (50%)
+  { name: 'Volatile',    fn: (t) => t < MAX_TICKS * 0.50 ? 0.020 + (Math.random() - 0.5) * 0.460 : -0.40 + (Math.random() - 0.5) * 0.110 },
+  // Pump & Dump: strong rise early, then dumps hard at tick 18 (30%) — punishes late buyers
+  { name: 'Pump & Dump', fn: (t) => t < MAX_TICKS * 0.30 ? 0.035 + (Math.random() - 0.5) * 0.400 : -0.44 + (Math.random() - 0.5) * 0.090 },
 ]
 
 
@@ -185,6 +185,22 @@ function netWorth(s) {
   return s.cash + s.bank + s.isaValue + s.cryptoValue + s.stocksValue + s.lisaValue + bondsTotal
 }
 
+// Total profit from all investments — used for the portfolio chart.
+// Shows how much the player has GAINED (or lost) from investing, not their raw wealth.
+// Refs are mutated here so the calling useEffect can read fresh values without stale closures.
+function profitWorth(s, stocksProfitRef, cryptoProfitRef, bondProfitRef) {
+  if (s.bondsInvested !== 0) {
+    bondProfitRef.current = s.bondsReturned + s.bonds.reduce((sum, b) => sum + b.value, 0) - s.bondsInvested
+  }
+  if (s.cryptoInvested !== 0) {
+    cryptoProfitRef.current = s.cryptoValue - s.cryptoInvested
+  }
+  if (s.stocksInvested !== 0) {
+    stocksProfitRef.current = s.stocksValue - s.stocksInvested
+  }
+  return s.bankProfit + s.isaProfit + cryptoProfitRef.current + stocksProfitRef.current + bondProfitRef.current + s.lisaProfit
+}
+
 // The target the player needs to hit — 20% of the £300k house price = £60k
 function downPaymentNeeded(s) {
   return s.housePrice * DOWN_PAYMENT_FRACTION
@@ -265,8 +281,11 @@ export default function App() {
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION)
   const [started, setStarted] = useState(false)
   const [latestCandle, setLatestCandle] = useState(null)
-  const prevNwRef = useRef(1000)
+  const prevNwRef = useRef(0)
   const gameStartTimeRef = useRef(0)
+  const cryptoProfitRef = useRef(0)
+  const stocksProfitRef = useRef(0)
+  const bondProfitRef = useRef(0)
 
   // 60-second game countdown — at 0 resolve win/loss
   useEffect(() => {
@@ -300,11 +319,11 @@ export default function App() {
     return () => clearInterval(id)
   }, [started])
 
-  // Generate a candle whenever tickIndex advances
+  // Generate a candle whenever tickIndex advances — tracks investment profit, not net worth
   useEffect(() => {
     if (!started || state.tickIndex === 0) return
     const open = prevNwRef.current
-    const close = netWorth(state)
+    const close = profitWorth(state, stocksProfitRef, cryptoProfitRef, bondProfitRef)
     prevNwRef.current = close
     setLatestCandle({
       time: gameStartTimeRef.current + state.tickIndex,
@@ -386,8 +405,11 @@ export default function App() {
     setTimeLeft(GAME_DURATION)
     setStarted(false)
     setLatestCandle(null)
-    prevNwRef.current = 1000
+    prevNwRef.current = 0
     gameStartTimeRef.current = 0
+    cryptoProfitRef.current = 0
+    stocksProfitRef.current = 0
+    bondProfitRef.current = 0
   }
 
   const nw = netWorth(state)
@@ -425,7 +447,7 @@ export default function App() {
         <div className="progress-bar">
           <div className="progress-fill" style={{ width: `${progress * 100}%` }} />
         </div>
-        <button onClick={buyHouse} disabled={nw < dp}>
+        <button onClick={buyHouse} disabled={nw < dp} style={{color: "white"}}>
           🏠 Buy House ({fmt(dp)} down payment needed)
         </button>
       </div>
