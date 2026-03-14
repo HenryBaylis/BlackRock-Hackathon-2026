@@ -1,14 +1,28 @@
 import { fmt } from '../utils'
 import Asset from './Asset'
 
+function Sparkline({ data, color }) {
+    const W = 220, H = 60
+    if (data.length < 2) return null
+    const min = Math.min(...data), max = Math.max(...data)
+    const range = max - min || 1
+    const pts = data.map((v, i) => `${((i / (data.length - 1)) * W).toFixed(1)},${(H - ((v - min) / range) * (H - 6) - 3).toFixed(1)}`)
+    return (
+        <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H}>
+            <polyline points={pts.join(' ')} fill="none" stroke={color} strokeWidth="1.5" />
+            <circle cx={pts.at(-1).split(',')[0]} cy={pts.at(-1).split(',')[1]} r="3" fill={color} />
+        </svg>
+    )
+}
+
 const BANK_INTEREST_RATE = 0.04
 const BANK_TAX_RATE      = 0.20
-const RENT               = 20
-const INFLATION_RATE     = 0.005
+const RENT               = 40
+const INFLATION_RATE     = 0.015
 const LISA_MAX_TOTAL     = 20000
 const LISA_DEPOSIT_LIMIT = 4000
 
-export default function AssetList({ cash, bank, cryptoValue, cryptoInvested, stocksValue, stocksInvested, cryptoPrice, stockPrice, priceHistory, isaValue, lisaValue, lisaDeposited, lisaCooldown, bondValue, bondInvested, actionHandlers }) {
+export default function AssetList({ cash, bank, cryptoValue, cryptoInvested, stocksValue, stocksInvested, cryptoPrice, stockPrice, priceHistory, isaValue, lisaValue, lisaDeposited, lisaCooldown, bonds, tickIndex, actionHandlers }) {
     const canAfford = cash >= 10
 
     return (
@@ -63,17 +77,24 @@ export default function AssetList({ cash, bank, cryptoValue, cryptoInvested, sto
                 priceHistory={priceHistory.stocks}
                 color="#4caf50"
             />
-            <Asset
-                assetName="📋 Bond"
-                value={bondValue}
-                invested={bondInvested}
-                currPrice={bondValue}
-                onBuy={actionHandlers.buyBond}
-                onSell={actionHandlers.sellBond}
-                canBuy={canAfford}
-                priceHistory={priceHistory.bond}
-                color="#2196f3"
-            />
+            <div className="asset-card" style={{ '--accent': '#2196f3' }}>
+                <h2 className="asset-name">📋 Bond</h2>
+                <div className="sparkline-wrap">
+                    <Sparkline data={priceHistory.bond} color="#2196f3" />
+                </div>
+                <div className="asset-value" style={{ marginBottom: 8 }}>
+                    {bonds.length === 0
+                        ? 'No active bonds'
+                        : bonds.map((b, i) => (
+                            <div key={i}>{fmt(b.value)} — {b.unlockTick - tickIndex}s left</div>
+                        ))
+                    }
+                </div>
+                <div className="btn-row">
+                    <button className="btn-buy" onClick={() => actionHandlers.lockBond(10)} disabled={!canAfford}>Lock 10s</button>
+                    <button className="btn-buy" onClick={() => actionHandlers.lockBond(20)} disabled={!canAfford}>Lock 20s</button>
+                </div>
+            </div>
         </div>
     )
 }

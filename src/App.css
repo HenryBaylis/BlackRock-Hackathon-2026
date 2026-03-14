@@ -197,17 +197,17 @@
 }
 
 .job-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
   background: white;
   color: black;
   font-weight: bold;
-  padding: 20px 30px;
-  border-radius: 12px;
-  border: 3px solid black;
-  font-size: 24px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 2px solid black;
+  font-size: 14px;
+  white-space: nowrap;
   animation: popupAnim 0.3s ease;
   z-index: 999;
 }
@@ -217,6 +217,18 @@
   50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
   100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
 }
+/* ─── End screen analytics ──────────────────────────────────────────────── */
+
+.analytics {
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 0.95rem;
+}
+
+.analytics td {
+  padding: 4px 16px 4px 0;
+}
+
 /* ─── Learn overlay ──────────────────────────────────────────────────────── */
 
 .learn-btn {

@@ -10,8 +10,8 @@ import Profile from './components/Profile'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const RENT                   = 20
-const INFLATION_RATE         = 0.005
+const RENT                   = 40
+const INFLATION_RATE         = 0.015
 const BANK_INTEREST_RATE     = 0.008
 const BANK_TAX_RATE          = 0.20   // 20% tax on bank interest
 const ISA_INTEREST_RATE      = 0.009  // regular ISA — tax-free, free withdrawal
@@ -45,20 +45,25 @@ const BOND_FUNCTIONS = [
   { name: 'Premium Bond',  fn: ()  => Math.random() < 0.05 ? 0.35 : 0.002 },
 ]
 
-// Crypto: can and will crash — each function has a distinct character
+// Crypto: chaotic oscillation pre-crash, all functions crash hard
 const CRYPTO_FUNCTIONS = [
-  { name: 'Moon Shot',   fn: ()  => 0.055 + (Math.random() - 0.5) * 0.100 },
-  { name: 'Rug Pull',    fn: (t) => t < MAX_TICKS * 0.6 ? 0.065 + (Math.random() - 0.5) * 0.040 : -0.090 + (Math.random() - 0.5) * 0.050 },
-  { name: 'Crash',       fn: ()  => -0.030 + (Math.random() - 0.5) * 0.070 },
-  { name: 'Volatile',    fn: ()  => (Math.random() - 0.5) * 0.160 },
-  { name: 'Pump & Dump', fn: (t) => t < MAX_TICKS * 0.35 ? 0.090 + (Math.random() - 0.5) * 0.030 : t < MAX_TICKS * 0.65 ? (Math.random() - 0.5) * 0.040 : -0.080 + (Math.random() - 0.5) * 0.040 },
+  // Moon Shot: violent swings around base, collapses at 65%
+  { name: 'Moon Shot',   fn: (t) => t < MAX_TICKS * 0.65 ? (Math.random() - 0.5) * 0.420 : -0.40 + (Math.random() - 0.5) * 0.100 },
+  // Rug Pull: slightly positive bias with huge noise, drops at 55%
+  { name: 'Rug Pull',    fn: (t) => t < MAX_TICKS * 0.55 ? 0.010 + (Math.random() - 0.5) * 0.380 : -0.42 + (Math.random() - 0.5) * 0.090 },
+  // Early Crash: obliterated in the first 20% then bleeds slowly
+  { name: 'Early Crash', fn: (t) => t < MAX_TICKS * 0.20 ? -0.48 + (Math.random() - 0.5) * 0.100 : -0.008 + (Math.random() - 0.5) * 0.060 },
+  // Volatile: extreme chaos, rug pull at 50%
+  { name: 'Volatile',    fn: (t) => t < MAX_TICKS * 0.50 ? (Math.random() - 0.5) * 0.500 : -0.40 + (Math.random() - 0.5) * 0.110 },
+  // Pump & Dump: spiky chaos, dumps hard at 30%
+  { name: 'Pump & Dump', fn: (t) => t < MAX_TICKS * 0.30 ? 0.015 + (Math.random() - 0.5) * 0.440 : -0.44 + (Math.random() - 0.5) * 0.090 },
 ]
 
 
 function makeInitialState() {
   return {
     cash: 1000,
-    income: 50,
+    income: 100,
     bank: 0,
     cryptoInvested: 0,
     cryptoValue: 0,
@@ -76,8 +81,13 @@ function makeInitialState() {
     lisaValue: 0,
     lisaDeposited: 0,
     lisaNextDepositTick: 0,
-    bondValue: 0,
-    bondInvested: 0,
+    bonds: [],
+    bondsInvested: 0,
+    bondsReturned: 0,
+    bankProfit: 0,
+    isaProfit: 0,
+    lisaProfit: 0,
+    lisaBonusTotal: 0,
     priceHistory: {
       crypto: [1.0],
       stocks: [1.0],
@@ -95,25 +105,38 @@ function tick(state) {
 
   // Bank: interest minus 20% tax
   const bankInterest = s.bank * BANK_INTEREST_RATE
-  s.bank += bankInterest * (1 - BANK_TAX_RATE)
+  const bankGain = bankInterest * (1 - BANK_TAX_RATE)
+  s.bank += bankGain
+  s.bankProfit += bankGain
 
   // Regular ISA: tax-free growth, freely withdrawable
-  s.isaValue *= (1 + ISA_INTEREST_RATE)
+  const isaGain = s.isaValue * ISA_INTEREST_RATE
+  s.isaValue += isaGain
+  s.isaProfit += isaGain
 
   // Lifetime ISA: tax-free growth, locked for house purchase only
-  s.lisaValue *= (1 + LISA_INTEREST_RATE)
+  const lisaGain = s.lisaValue * LISA_INTEREST_RATE
+  s.lisaValue += lisaGain
+  s.lisaProfit += lisaGain
 
   const stockReturn = STOCK_FUNCTIONS[s.stockFnIndex].fn(s.tickIndex)
   s.stocksValue *= (1 + stockReturn)
   const newStockPrice = s.priceHistory.stocks.at(-1) * (1 + stockReturn)
 
   const cryptoReturn = CRYPTO_FUNCTIONS[s.cryptoFnIndex].fn(s.tickIndex)
-  s.cryptoValue *= (1 + cryptoReturn)
-  const newCryptoPrice = s.priceHistory.crypto.at(-1) * (1 + cryptoReturn)
+  const rawCryptoPrice = s.priceHistory.crypto.at(-1) * (1 + cryptoReturn)
+  const newCryptoPrice = Math.min(rawCryptoPrice, 2.0)
+  const effectiveCryptoReturn = s.priceHistory.crypto.at(-1) > 0 ? (newCryptoPrice / s.priceHistory.crypto.at(-1)) - 1 : cryptoReturn
+  s.cryptoValue *= (1 + effectiveCryptoReturn)
 
   const bondReturn = BOND_FUNCTIONS[s.bondFnIndex].fn(s.tickIndex)
-  s.bondValue *= (1 + bondReturn)
   const newBondPrice = s.priceHistory.bond.at(-1) * (1 + bondReturn)
+  const grownBonds = s.bonds.map(b => ({ ...b, value: b.value * (1 + bondReturn) }))
+  const matured = grownBonds.filter(b => s.tickIndex >= b.unlockTick)
+  s.bonds = grownBonds.filter(b => s.tickIndex < b.unlockTick)
+  const maturedTotal = matured.reduce((sum, b) => sum + b.value, 0)
+  s.cash += maturedTotal
+  s.bondsReturned += maturedTotal
 
   s.tickIndex += 1
 
@@ -127,7 +150,8 @@ function tick(state) {
 }
 
 function netWorth(s) {
-  return s.cash + s.bank + s.isaValue + s.cryptoValue + s.stocksValue + s.lisaValue + s.bondValue
+  const bondsTotal = s.bonds.reduce((sum, b) => sum + b.value, 0)
+  return s.cash + s.bank + s.isaValue + s.cryptoValue + s.stocksValue + s.lisaValue + bondsTotal
 }
 
 function downPaymentNeeded(s) {
@@ -146,14 +170,37 @@ function EndScreen({ rank, state, nw, dp, onReset }) {
     return () => { audio.pause(); audio.currentTime = 0 }
   }, [rank])
 
+  const remainingBondValue = state.bonds.reduce((sum, b) => sum + b.value, 0)
+  const bondPnl = state.bondsReturned + remainingBondValue - state.bondsInvested
+  const stockPnl = state.stocksValue - state.stocksInvested
+  const cryptoPnl = state.cryptoValue - state.cryptoInvested
+
+  const analytics = [
+    { label: '🏦 Bank interest',   value: state.bankProfit },
+    { label: '💰 ISA interest',    value: state.isaProfit },
+    { label: '🏛️ LISA growth',    value: state.lisaProfit + state.lisaBonusTotal },
+    { label: '📈 Stocks P&L',      value: stockPnl },
+    { label: '₿ Crypto P&L',       value: cryptoPnl },
+    { label: '📋 Bonds P&L',       value: bondPnl },
+  ]
+
   return (
     <div className="screen">
       <img src={`/dmc/${rank}.png`} alt={rank} style={{ width: '25%' }} />
-      {state.won      && <h1>🏠 You bought a house!</h1>}
-      {state.bankrupt && <h1>💸 Bankrupt!</h1>}
-      {!state.won && !state.bankrupt && <h1>⏰ Time's up!</h1>}
-      <p>Net worth: {fmt(nw)} — needed {fmt(dp)}</p>
-      <button onClick={onReset}>{state.won ? 'Play again' : 'Try again'}</button>
+      <p>{fmt(nw)} / {fmt(dp)} down payment</p>
+      <table className="analytics">
+        <tbody>
+          {analytics.map(({ label, value }) => (
+            <tr key={label}>
+              <td>{label}</td>
+              <td style={{ color: value >= 0 ? '#42c98a' : '#e05555', textAlign: 'right' }}>
+                {value >= 0 ? '+' : ''}{fmt(value)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <button onClick={onReset}>Try again</button>
     </div>
   )
 }
@@ -244,18 +291,16 @@ export default function App() {
       if (s.lisaDeposited >= LISA_MAX_TOTAL) return s
       const n = Math.min(LISA_DEPOSIT_LIMIT, LISA_MAX_TOTAL - s.lisaDeposited)
       const bonus = 1000 // 25% government top-up on £4,000 deposit
-      return { ...s, cash: s.cash - n, lisaValue: s.lisaValue + n + bonus, lisaDeposited: s.lisaDeposited + n, lisaNextDepositTick: s.tickIndex + LISA_DEPOSIT_INTERVAL }
+      return { ...s, cash: s.cash - n, lisaValue: s.lisaValue + n + bonus, lisaDeposited: s.lisaDeposited + n, lisaNextDepositTick: s.tickIndex + LISA_DEPOSIT_INTERVAL, lisaBonusTotal: s.lisaBonusTotal + bonus }
     })
 
-  const buyBond = () =>
-    setState(s => ({ ...s, cash: s.cash - TRANSACTION_AMOUNT, bondInvested: s.bondInvested + TRANSACTION_AMOUNT, bondValue: s.bondValue + TRANSACTION_AMOUNT }))
-
-  const sellBond = () =>
-    setState(s => {
-      const n = Math.min(TRANSACTION_AMOUNT, s.bondValue)
-      const fraction = s.bondValue > 0 ? n / s.bondValue : 0
-      return { ...s, cash: s.cash + n, bondInvested: s.bondInvested * (1 - fraction), bondValue: s.bondValue - n }
-    })
+  const lockBond = (duration) =>
+    setState(s => ({
+      ...s,
+      cash: s.cash - TRANSACTION_AMOUNT,
+      bonds: [...s.bonds, { value: TRANSACTION_AMOUNT, unlockTick: s.tickIndex + duration }],
+      bondsInvested: s.bondsInvested + TRANSACTION_AMOUNT,
+    }))
 
   const buyHouse = () => {
     if (netWorth(state) >= downPaymentNeeded(state)) {
@@ -263,7 +308,7 @@ export default function App() {
     }
   }
 
-  const actionHandlers = { depositBank, withdrawBank, depositIsa, withdrawIsa, depositLisa, buyCrypto, sellCrypto, buyStocks, sellStocks, buyBond, sellBond }
+  const actionHandlers = { depositBank, withdrawBank, depositIsa, withdrawIsa, depositLisa, buyCrypto, sellCrypto, buyStocks, sellStocks, lockBond }
 
   const reset = () => {
     setState(makeInitialState())
@@ -339,8 +384,8 @@ export default function App() {
         lisaValue={state.lisaValue}
         lisaDeposited={state.lisaDeposited}
         lisaCooldown={Math.max(0, state.lisaNextDepositTick - state.tickIndex)}
-        bondValue={state.bondValue}
-        bondInvested={state.bondInvested}
+        bonds={state.bonds}
+        tickIndex={state.tickIndex}
         actionHandlers={actionHandlers}
       />
     </div>

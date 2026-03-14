@@ -5,7 +5,7 @@ class Profile extends React.Component {
     super(props);
 
     const jobs = ["Intern", "Clerk", "Developer", "Manager", "Director", "CEO"];
-    const jobIncomes = [50, 60, 70, 80, 90, 100];
+    const jobIncomes = [100, 120, 140, 160, 180, 200];
 
     this.state = {
       name: "John Doe",
