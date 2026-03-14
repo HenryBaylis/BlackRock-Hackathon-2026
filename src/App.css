@@ -229,6 +229,41 @@
   padding: 4px 16px 4px 0;
 }
 
+/* ─── End screen advice ─────────────────────────────────────────────────── */
+
+.advice-section {
+  margin: 16px 0;
+  text-align: left;
+  max-width: 480px;
+}
+
+.advice-section h3 {
+  margin: 0 0 10px;
+  font-size: 1rem;
+}
+
+.advice-item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.advice-emoji {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.advice-item p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  opacity: 0.9;
+}
+
 /* ─── Learn overlay ──────────────────────────────────────────────────────── */
 
 .learn-btn {

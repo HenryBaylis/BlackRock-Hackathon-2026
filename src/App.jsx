@@ -185,6 +185,14 @@ function EndScreen({ rank, state, nw, dp, onReset }) {
     { label: '📋 Bonds P&L',       value: bondPnl },
   ]
 
+  const advice = []
+  if (state.lisaDeposited < 8000)
+    advice.push({ emoji: '🏛️', text: 'You didn\'t use the Lifetime ISA enough. The government tops up every £4,000 deposit with a free £1,000 bonus — that\'s a guaranteed 25% return before any interest. It\'s one of the best tools for buying your first home.' })
+  if (cryptoPnl < 0)
+    advice.push({ emoji: '₿', text: 'You lost money on crypto. Crypto is extremely volatile and frequently crashes to near zero — it\'s the highest risk asset in the game. Only put in money you can afford to lose entirely, and get out before the rug pull.' })
+  if (state.bank > 2000 && state.isaValue < state.bank / 2)
+    advice.push({ emoji: '💰', text: 'You kept a lot in the bank but not in an ISA. Both earn interest, but the ISA is completely tax-free — the bank takes 20% of every penny of interest it pays you. Moving savings into an ISA is a free gain.' })
+
   return (
     <div className="screen">
       <img src={`/dmc/${rank}.png`} alt={rank} style={{ width: '50%' }} />
@@ -201,6 +209,17 @@ function EndScreen({ rank, state, nw, dp, onReset }) {
           ))}
         </tbody>
       </table>
+      {advice.length > 0 && (
+        <div className="advice-section">
+          <h3>💡 What to do better</h3>
+          {advice.map(({ emoji, text }) => (
+            <div key={emoji} className="advice-item">
+              <span className="advice-emoji">{emoji}</span>
+              <p>{text}</p>
+            </div>
+          ))}
+        </div>
+      )}
       <button onClick={onReset}>Try again</button>
     </div>
   )
