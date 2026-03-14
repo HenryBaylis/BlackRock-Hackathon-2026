@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { fmt } from './utils'
 import Timer from './components/Timer'
+import Learn from './components/Learn'
 import AssetList from './components/AssetList'
 import Cookie from './components/Cookie'
-import Stocks from './components/Stocks'
 import BriefcaseButton from './components/Briefcase'
 import Profile from './components/Profile'
 
@@ -14,7 +14,8 @@ const RENT                   = 20
 const INFLATION_RATE         = 0.005
 const BANK_INTEREST_RATE     = 0.008
 const BANK_TAX_RATE          = 0.20   // 20% tax on bank interest
-const LISA_INTEREST_RATE     = 0.009  // tax-free, slightly above bank
+const ISA_INTEREST_RATE      = 0.009  // regular ISA — tax-free, free withdrawal
+const LISA_INTEREST_RATE     = 0.009  // lifetime ISA — tax-free, locked for house purchase only
 const LISA_MAX_TOTAL         = 20000  // £20k lifetime cap
 const LISA_DEPOSIT_LIMIT     = 4000   // max per deposit window
 const LISA_DEPOSIT_INTERVAL  = 20     // seconds between deposit windows
@@ -70,6 +71,7 @@ function makeInitialState() {
     stockFnIndex:  Math.floor(Math.random() * STOCK_FUNCTIONS.length),
     cryptoFnIndex: Math.floor(Math.random() * CRYPTO_FUNCTIONS.length),
     bondFnIndex:   Math.floor(Math.random() * BOND_FUNCTIONS.length),
+    isaValue: 0,
     lisaValue: 0,
     lisaDeposited: 0,
     lisaNextDepositTick: 0,
@@ -94,7 +96,10 @@ function tick(state) {
   const bankInterest = s.bank * BANK_INTEREST_RATE
   s.bank += bankInterest * (1 - BANK_TAX_RATE)
 
-  // LISA: tax-free growth
+  // Regular ISA: tax-free growth, freely withdrawable
+  s.isaValue *= (1 + ISA_INTEREST_RATE)
+
+  // Lifetime ISA: tax-free growth, locked for house purchase only
   s.lisaValue *= (1 + LISA_INTEREST_RATE)
 
   const stockReturn = STOCK_FUNCTIONS[s.stockFnIndex].fn(s.tickIndex)
@@ -121,7 +126,7 @@ function tick(state) {
 }
 
 function netWorth(s) {
-  return s.cash + s.bank + s.cryptoValue + s.stocksValue + s.lisaValue + s.bondValue
+  return s.cash + s.bank + s.isaValue + s.cryptoValue + s.stocksValue + s.lisaValue + s.bondValue
 }
 
 function downPaymentNeeded(s) {
@@ -220,16 +225,23 @@ export default function App() {
       return { ...s, cash: s.cash + n, stocksInvested: s.stocksInvested * (1 - fraction), stocksValue: s.stocksValue - n }
     })
 
+  const depositIsa = () =>
+    setState(s => ({ ...s, cash: s.cash - TRANSACTION_AMOUNT, isaValue: s.isaValue + TRANSACTION_AMOUNT }))
+
+  const withdrawIsa = () =>
+    setState(s => {
+      const n = Math.min(TRANSACTION_AMOUNT, s.isaValue)
+      return { ...s, cash: s.cash + n, isaValue: s.isaValue - n }
+    })
+
   const depositLisa = () =>
     setState(s => {
       if (s.tickIndex < s.lisaNextDepositTick) return s
       if (s.lisaDeposited >= LISA_MAX_TOTAL) return s
       const n = Math.min(LISA_DEPOSIT_LIMIT, LISA_MAX_TOTAL - s.lisaDeposited)
-      return { ...s, cash: s.cash - n, lisaValue: s.lisaValue + n, lisaDeposited: s.lisaDeposited + n, lisaNextDepositTick: s.tickIndex + LISA_DEPOSIT_INTERVAL }
+      const bonus = 1000 // 25% government top-up on £4,000 deposit
+      return { ...s, cash: s.cash - n, lisaValue: s.lisaValue + n + bonus, lisaDeposited: s.lisaDeposited + n, lisaNextDepositTick: s.tickIndex + LISA_DEPOSIT_INTERVAL }
     })
-
-  const withdrawLisa = () =>
-    setState(s => s.lisaValue > 0 ? { ...s, cash: s.cash + s.lisaValue, lisaValue: 0 } : s)
 
   const buyBond = () =>
     setState(s => ({ ...s, cash: s.cash - TRANSACTION_AMOUNT, bondInvested: s.bondInvested + TRANSACTION_AMOUNT, bondValue: s.bondValue + TRANSACTION_AMOUNT }))
@@ -247,7 +259,7 @@ export default function App() {
     }
   }
 
-  const actionHandlers = { depositBank, withdrawBank, buyCrypto, sellCrypto, buyStocks, sellStocks, depositLisa, withdrawLisa, buyBond, sellBond }
+  const actionHandlers = { depositBank, withdrawBank, depositIsa, withdrawIsa, depositLisa, buyCrypto, sellCrypto, buyStocks, sellStocks, buyBond, sellBond }
 
   const reset = () => {
     setState(makeInitialState())
@@ -271,6 +283,7 @@ export default function App() {
       <header>
         <span>Net worth: {fmt(nw)}</span>
         <Timer timeLeft={timeLeft} />
+        <Learn />
       </header>
 
       {/* House progress */}
@@ -307,6 +320,7 @@ export default function App() {
         cryptoPrice={state.priceHistory.crypto.at(-1) * TRANSACTION_AMOUNT}
         stockPrice={state.priceHistory.stocks.at(-1) * TRANSACTION_AMOUNT}
         priceHistory={state.priceHistory}
+        isaValue={state.isaValue}
         lisaValue={state.lisaValue}
         lisaDeposited={state.lisaDeposited}
         lisaCooldown={Math.max(0, state.lisaNextDepositTick - state.tickIndex)}
