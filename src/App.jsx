@@ -16,40 +16,29 @@ const BANK_INTEREST_RATE    = 0.008 // per second (was 0.04 per 5s tick)
 const DOWN_PAYMENT_FRACTION = 0.20
 const GAME_DURATION         = 60
 const TICK_INTERVAL         = 1
-const OPTION_INTERVAL       = 4
-const TRANSACTION_AMOUNT    = 2500
+const TRANSACTION_AMOUNT    = 1000
 const MAX_TICKS             = GAME_DURATION / TICK_INTERVAL  // 60
 
 // ─── Market behaviour functions (t = current tick, 0-indexed) ────────────────
 
+// Stocks: always net upward, no crashes — just different growth shapes
 const STOCK_FUNCTIONS = [
-  { name: 'Steady Growth',  fn: ()       => 0.010 + (Math.random() - 0.5) * 0.008 },
-  { name: 'Bull Run',       fn: (t)      => 0.002 + (t / MAX_TICKS) * 0.028 + (Math.random() - 0.5) * 0.006 },
-  { name: 'Bear Market',    fn: ()       => -0.006 + (Math.random() - 0.5) * 0.012 },
-  { name: 'Volatile',       fn: ()       =>           (Math.random() - 0.45) * 0.04 },
-  { name: 'Sine Wave',      fn: (t)      => 0.020  * Math.sin((t / MAX_TICKS) * Math.PI * 2) + (Math.random() - 0.5) * 0.004 },
+  { name: 'Steady Growth', fn: ()  => 0.008 + (Math.random() - 0.5) * 0.006 },
+  { name: 'Bull Run',      fn: (t) => 0.001 + (t / MAX_TICKS) * 0.024 + (Math.random() - 0.5) * 0.004 },
+  { name: 'Slow Burn',     fn: ()  => 0.003 + (Math.random() - 0.5) * 0.002 },
+  { name: 'Oscillator',    fn: (t) => 0.005 + 0.018 * Math.sin((t / MAX_TICKS) * Math.PI * 4) + (Math.random() - 0.5) * 0.003 },
+  { name: 'Growth Spurt',  fn: (t) => t < MAX_TICKS * 0.6 ? 0.001 + (Math.random() - 0.5) * 0.003 : 0.038 + (Math.random() - 0.5) * 0.008 },
 ]
 
+// Crypto: can and will crash — each function has a distinct character
 const CRYPTO_FUNCTIONS = [
-  { name: 'Moon Shot',      fn: ()       => 0.030 + (Math.random() - 0.5) * 0.050 },
-  { name: 'Crash',          fn: ()       => -0.016 + (Math.random() - 0.5) * 0.040 },
-  { name: 'Pump & Dump',    fn: (t)      => t < MAX_TICKS / 2 ? 0.036 + (Math.random() - 0.5) * 0.020 : -0.024 + (Math.random() - 0.5) * 0.030 },
-  { name: 'Sleeper',        fn: (t)      => t < MAX_TICKS * 0.7 ? 0.002 + (Math.random() - 0.5) * 0.010 : 0.080 + (Math.random() - 0.5) * 0.020 },
-  { name: 'Mania',          fn: (t)      => (t / MAX_TICKS) * 0.10 * (Math.random() - 0.4) },
+  { name: 'Moon Shot',   fn: ()  => 0.025 + (Math.random() - 0.5) * 0.050 },
+  { name: 'Rug Pull',    fn: (t) => t < MAX_TICKS * 0.6 ? 0.030 + (Math.random() - 0.5) * 0.020 : -0.045 + (Math.random() - 0.5) * 0.025 },
+  { name: 'Crash',       fn: ()  => -0.015 + (Math.random() - 0.5) * 0.035 },
+  { name: 'Volatile',    fn: ()  => (Math.random() - 0.5) * 0.080 },
+  { name: 'Pump & Dump', fn: (t) => t < MAX_TICKS * 0.35 ? 0.045 + (Math.random() - 0.5) * 0.015 : t < MAX_TICKS * 0.65 ? (Math.random() - 0.5) * 0.020 : -0.040 + (Math.random() - 0.5) * 0.020 },
 ]
 
-const ALL_ACTIONS = [
-  { id: 'depositBank',  label: 'Deposit',  group: '🏦 Bank' },
-  { id: 'withdrawBank', label: 'Withdraw', group: '🏦 Bank' },
-  { id: 'buyCrypto',    label: 'Buy',      group: '₿ Crypto' },
-  { id: 'sellCrypto',   label: 'Sell',     group: '₿ Crypto' },
-  { id: 'buyStocks',    label: 'Buy',      group: '📈 Stocks' },
-  { id: 'sellStocks',   label: 'Sell',     group: '📈 Stocks' },
-]
-
-function pickActions() {
-  return [...ALL_ACTIONS].sort(() => Math.random() - 0.5).slice(0, 3)
-}
 
 function makeInitialState() {
   return {
@@ -62,6 +51,7 @@ function makeInitialState() {
     stocksValue: 0,
     housePrice: 300000,
     won: false,
+    bankrupt: false,
     tickIndex: 0,
     stockFnIndex:  Math.floor(Math.random() * STOCK_FUNCTIONS.length),
     cryptoFnIndex: Math.floor(Math.random() * CRYPTO_FUNCTIONS.length),
@@ -112,7 +102,6 @@ function downPaymentNeeded(s) {
 export default function App() {
   const [state, setState] = useState(makeInitialState)
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION)
-  const [visibleActions, setVisibleActions] = useState(() => pickActions())
 
   // 60-second game countdown — at 0 resolve win/loss
   useEffect(() => {
@@ -135,19 +124,15 @@ export default function App() {
   useEffect(() => {
     const id = setInterval(() => {
       setState(s => {
-        if (s.won) return s
+        if (s.won || s.bankrupt) return s
         const drained = { ...s, cash: s.cash * (1 - INFLATION_RATE) - RENT }
-        return tick(drained)
+        const next = tick(drained)
+        return next.cash < 0 ? { ...next, bankrupt: true } : next
       })
     }, 1000)
     return () => clearInterval(id)
   }, [])
 
-  // Rotate available actions every OPTION_INTERVAL seconds
-  useEffect(() => {
-    const id = setInterval(() => setVisibleActions(pickActions()), OPTION_INTERVAL * 1000)
-    return () => clearInterval(id)
-  }, [])
 
   const handleCookie = () => setState(s => ({ ...s, cash: s.cash + s.income }))
 
@@ -191,7 +176,6 @@ export default function App() {
   const reset = () => {
     setState(makeInitialState())
     setTimeLeft(GAME_DURATION)
-    setVisibleActions(pickActions())
   }
 
   const nw = netWorth(state)
@@ -203,6 +187,14 @@ export default function App() {
       <h1>🏠 You bought a house!</h1>
       <p>Net worth: {fmt(nw)}</p>
       <button onClick={reset}>Play again</button>
+    </div>
+  )
+
+  if (state.bankrupt) return (
+    <div className="screen">
+      <h1>💸 Bankrupt!</h1>
+      <p>You ran out of money.</p>
+      <button onClick={reset}>Try again</button>
     </div>
   )
 
@@ -258,10 +250,7 @@ export default function App() {
         cryptoName={CRYPTO_FUNCTIONS[state.cryptoFnIndex].name}
       />
 
-      <Money
-        visibleActions={visibleActions}
-        actionHandlers={actionHandlers}
-      />
+      <Money actionHandlers={actionHandlers} />
     </div>
   )
 }
