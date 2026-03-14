@@ -187,7 +187,7 @@ function EndScreen({ rank, state, nw, dp, onReset }) {
 
   return (
     <div className="screen">
-      <img src={`/dmc/${rank}.png`} alt={rank} style={{ width: '25%' }} />
+      <img src={`/dmc/${rank}.png`} alt={rank} style={{ width: '50%' }} />
       <p>{fmt(nw)} / {fmt(dp)} down payment</p>
       <table className="analytics">
         <tbody>
