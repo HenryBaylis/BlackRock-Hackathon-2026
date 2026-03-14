@@ -57,7 +57,10 @@ class BriefcaseButton extends React.Component {
       width: "200px",
       cursor: "pointer",
       transform: this.state.isPressed ? "scale(0.85)" : "scale(1)",
-      transition: "transform 0.1s",
+      transition: "transform 0.1s, filter 0.1s",
+      filter: this.state.isPressed
+        ? "drop-shadow(4px 4px 8px rgba(0,0,0,0.3))"
+        : "drop-shadow(8px 8px 20px rgba(0,0,0,0.6))"
     };
 
     const containerStyle = {
