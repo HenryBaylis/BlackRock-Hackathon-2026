@@ -4,8 +4,8 @@ import { createChart, CandlestickSeries } from 'lightweight-charts';
 
 export default function PortfolioChart( { newPoint } ){
   const chartOptions = {
-    width: 800,
-    height: 400,
+    width: 600,
+    height: 350,
     autoSize: false,
     autoScale: false,
     handleScale: false,
