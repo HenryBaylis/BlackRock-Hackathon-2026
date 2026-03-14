@@ -15,7 +15,6 @@ const BANK_INTEREST_RATE    = 0.008 // per second (was 0.04 per 5s tick)
 const DOWN_PAYMENT_FRACTION = 0.20
 const GAME_DURATION         = 60
 const TICK_INTERVAL         = 1
-const OPTION_INTERVAL       = 4
 const COOKIE_VALUE          = 50
 const TRANSACTION_AMOUNT    = 1000
 const MAX_TICKS             = GAME_DURATION / TICK_INTERVAL  // 60
@@ -40,18 +39,6 @@ const CRYPTO_FUNCTIONS = [
   { name: 'Pump & Dump', fn: (t) => t < MAX_TICKS * 0.35 ? 0.045 + (Math.random() - 0.5) * 0.015 : t < MAX_TICKS * 0.65 ? (Math.random() - 0.5) * 0.020 : -0.040 + (Math.random() - 0.5) * 0.020 },
 ]
 
-const ALL_ACTIONS = [
-  { id: 'depositBank',  label: 'Deposit',  group: '🏦 Bank' },
-  { id: 'withdrawBank', label: 'Withdraw', group: '🏦 Bank' },
-  { id: 'buyCrypto',    label: 'Buy',      group: '₿ Crypto' },
-  { id: 'sellCrypto',   label: 'Sell',     group: '₿ Crypto' },
-  { id: 'buyStocks',    label: 'Buy',      group: '📈 Stocks' },
-  { id: 'sellStocks',   label: 'Sell',     group: '📈 Stocks' },
-]
-
-function pickActions() {
-  return [...ALL_ACTIONS].sort(() => Math.random() - 0.5).slice(0, 3)
-}
 
 function makeInitialState() {
   return {
@@ -114,7 +101,6 @@ function downPaymentNeeded(s) {
 export default function App() {
   const [state, setState] = useState(makeInitialState)
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION)
-  const [visibleActions, setVisibleActions] = useState(() => pickActions())
 
   // 60-second game countdown — at 0 resolve win/loss
   useEffect(() => {
@@ -146,11 +132,6 @@ export default function App() {
     return () => clearInterval(id)
   }, [])
 
-  // Rotate available actions every OPTION_INTERVAL seconds
-  useEffect(() => {
-    const id = setInterval(() => setVisibleActions(pickActions()), OPTION_INTERVAL * 1000)
-    return () => clearInterval(id)
-  }, [])
 
   const handleCookie = () => setState(s => ({ ...s, cash: s.cash + COOKIE_VALUE }))
 
@@ -194,7 +175,6 @@ export default function App() {
   const reset = () => {
     setState(makeInitialState())
     setTimeLeft(GAME_DURATION)
-    setVisibleActions(pickActions())
   }
 
   const nw = netWorth(state)
@@ -258,10 +238,7 @@ export default function App() {
         cryptoName={CRYPTO_FUNCTIONS[state.cryptoFnIndex].name}
       />
 
-      <Money
-        visibleActions={visibleActions}
-        actionHandlers={actionHandlers}
-      />
+      <Money actionHandlers={actionHandlers} />
     </div>
   )
 }
