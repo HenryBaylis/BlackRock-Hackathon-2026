@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { fmt } from './utils'
 import Timer from './components/Timer'
-import Assets from './components/Assets'
-import Money from './components/Money'
+import AssetList from './components/AssetList'
 import Cookie from './components/Cookie'
 import Stocks from './components/Stocks'
 
@@ -225,11 +224,16 @@ export default function App() {
 
       <Cookie onClick={handleCookie} />
 
-      <Assets
+      <AssetList
         cash={state.cash}
         bank={state.bank}
         cryptoValue={state.cryptoValue}
+        cryptoInvested={state.cryptoInvested}
         stocksValue={state.stocksValue}
+        stocksInvested={state.stocksInvested}
+        cryptoPrice={state.priceHistory.crypto.at(-1) * TRANSACTION_AMOUNT}
+        stockPrice={state.priceHistory.stocks.at(-1) * TRANSACTION_AMOUNT}
+        actionHandlers={actionHandlers}
       />
 
       <Stocks
@@ -237,8 +241,6 @@ export default function App() {
         stockName={STOCK_FUNCTIONS[state.stockFnIndex].name}
         cryptoName={CRYPTO_FUNCTIONS[state.cryptoFnIndex].name}
       />
-
-      <Money actionHandlers={actionHandlers} />
     </div>
   )
 }
