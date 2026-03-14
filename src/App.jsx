@@ -314,13 +314,6 @@ export default function App() {
         bondInvested={state.bondInvested}
         actionHandlers={actionHandlers}
       />
-
-      <Stocks
-        priceHistory={state.priceHistory}
-        stockName={STOCK_FUNCTIONS[state.stockFnIndex].name}
-        cryptoName={CRYPTO_FUNCTIONS[state.cryptoFnIndex].name}
-        bondName={BOND_FUNCTIONS[state.bondFnIndex].name}
-      />
     </div>
   )
 }
