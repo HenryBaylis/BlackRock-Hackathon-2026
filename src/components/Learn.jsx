@@ -39,7 +39,7 @@ const SECTIONS = [
   },
   {
     title: '🏆 Ranks',
-    body: `Your performance is judged at the end:\n• Sexy — 75%+ of target (or win)\n• Savage — 50–74%\n• Badass — 25–49%\n• Crazy — under 25%`,
+    body: `Your performance is judged at the end:\n• 🔥 Smoking Sexy Style — Buy the house, or reach 75%+ of the down payment\n• ⚔️ Savage — 50–74% of the down payment\n• 💪 Badass — 25–49% of the down payment\n• 🤪 Crazy — under 25% of the down payment`,
   },
 ]
 
