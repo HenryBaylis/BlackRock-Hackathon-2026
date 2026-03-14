@@ -185,6 +185,22 @@ function netWorth(s) {
   return s.cash + s.bank + s.isaValue + s.cryptoValue + s.stocksValue + s.lisaValue + bondsTotal
 }
 
+// Total profit from all investments — used for the portfolio chart.
+// Shows how much the player has GAINED (or lost) from investing, not their raw wealth.
+// Refs are mutated here so the calling useEffect can read fresh values without stale closures.
+function profitWorth(s, stocksProfitRef, cryptoProfitRef, bondProfitRef) {
+  if (s.bondsInvested !== 0) {
+    bondProfitRef.current = s.bondsReturned + s.bonds.reduce((sum, b) => sum + b.value, 0) - s.bondsInvested
+  }
+  if (s.cryptoInvested !== 0) {
+    cryptoProfitRef.current = s.cryptoValue - s.cryptoInvested
+  }
+  if (s.stocksInvested !== 0) {
+    stocksProfitRef.current = s.stocksValue - s.stocksInvested
+  }
+  return s.bankProfit + s.isaProfit + cryptoProfitRef.current + stocksProfitRef.current + bondProfitRef.current + s.lisaProfit
+}
+
 // The target the player needs to hit — 20% of the £300k house price = £60k
 function downPaymentNeeded(s) {
   return s.housePrice * DOWN_PAYMENT_FRACTION
@@ -265,8 +281,11 @@ export default function App() {
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION)
   const [started, setStarted] = useState(false)
   const [latestCandle, setLatestCandle] = useState(null)
-  const prevNwRef = useRef(1000)
+  const prevNwRef = useRef(0)
   const gameStartTimeRef = useRef(0)
+  const cryptoProfitRef = useRef(0)
+  const stocksProfitRef = useRef(0)
+  const bondProfitRef = useRef(0)
 
   // 60-second game countdown — at 0 resolve win/loss
   useEffect(() => {
@@ -300,11 +319,11 @@ export default function App() {
     return () => clearInterval(id)
   }, [started])
 
-  // Generate a candle whenever tickIndex advances
+  // Generate a candle whenever tickIndex advances — tracks investment profit, not net worth
   useEffect(() => {
     if (!started || state.tickIndex === 0) return
     const open = prevNwRef.current
-    const close = netWorth(state)
+    const close = profitWorth(state, stocksProfitRef, cryptoProfitRef, bondProfitRef)
     prevNwRef.current = close
     setLatestCandle({
       time: gameStartTimeRef.current + state.tickIndex,
@@ -386,8 +405,11 @@ export default function App() {
     setTimeLeft(GAME_DURATION)
     setStarted(false)
     setLatestCandle(null)
-    prevNwRef.current = 1000
+    prevNwRef.current = 0
     gameStartTimeRef.current = 0
+    cryptoProfitRef.current = 0
+    stocksProfitRef.current = 0
+    bondProfitRef.current = 0
   }
 
   const nw = netWorth(state)
