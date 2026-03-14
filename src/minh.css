@@ -1,7 +1,7 @@
 .asset-grid {
     display: grid;
-    grid-template-columns: repeat(3, 180px);
-    gap: 16px;
+    grid-template-columns: repeat(3, 220px);
+    gap: 24px;
     justify-content: center;
 }
 
@@ -9,8 +9,8 @@
     background: #0d0f12;
     border: 1px solid #1e2430;
     border-radius: 8px;
-    padding: 12px 14px;
-    width: 180px;
+    padding: 16px 18px;
+    width: 220px;
     font-family: 'DM Mono', monospace, sans-serif;
     position: relative;
     overflow: hidden;

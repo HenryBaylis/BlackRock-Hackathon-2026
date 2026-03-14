@@ -187,7 +187,7 @@ function EndScreen({ rank, state, nw, dp, onReset }) {
 
   return (
     <div className="screen">
-      <img src={`/dmc/${rank}.png`} alt={rank} style={{ width: '50%' }} />
+      <img src={`/dmc/${rank}.png`} alt={rank} style={{ width: '25%' }} />
       <p>{fmt(nw)} / {fmt(dp)} down payment</p>
       <table className="analytics">
         <tbody>
@@ -367,53 +367,51 @@ export default function App() {
         <Learn />
       </header>
 
-      <div className="game-body">
-        <div className="left-panel">
-          <AssetList
-            cash={state.cash}
-            bank={state.bank}
-            cryptoValue={state.cryptoValue}
-            cryptoInvested={state.cryptoInvested}
-            stocksValue={state.stocksValue}
-            stocksInvested={state.stocksInvested}
-            cryptoPrice={state.priceHistory.crypto.at(-1) * TRANSACTION_AMOUNT}
-            stockPrice={state.priceHistory.stocks.at(-1) * TRANSACTION_AMOUNT}
-            priceHistory={state.priceHistory}
-            isaValue={state.isaValue}
-            lisaValue={state.lisaValue}
-            lisaDeposited={state.lisaDeposited}
-            lisaCooldown={Math.max(0, state.lisaNextDepositTick - state.tickIndex)}
-            bonds={state.bonds}
-            tickIndex={state.tickIndex}
-            actionHandlers={actionHandlers}
-          />
+      {/* House progress */}
+      <div className="house-progress">
+        <p>Down payment: {fmt(nw)} / {fmt(dp)}</p>
+        <div className="progress-bar">
+          <div className="progress-fill" style={{ width: `${progress * 100}%` }} />
         </div>
-        <div className="centre-panel">
-          <div className="house-progress">
-            <p>Down payment: {fmt(nw)} / {fmt(dp)}</p>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${progress * 100}%` }} />
-            </div>
-            <button onClick={buyHouse} disabled={nw < dp}>
-              🏠 Buy House ({fmt(dp)} down payment needed)
-            </button>
-          </div>
-          <Profile
-            cash={state.cash}
-            income={state.income}
-            netWorth={nw}
-            setIncome={(newIncome) =>
-              setState(prev => ({
-                ...prev,
-                income: newIncome
-            }))
-          }/>
-          <BriefcaseButton addCash={handleCookie} />
-        </div>
-        <div className="right-panel">
-          <PortfolioChart newPoint={latestCandle} />
-        </div>
+        <button onClick={buyHouse} disabled={nw < dp}>
+          🏠 Buy House ({fmt(dp)} down payment needed)
+        </button>
       </div>
+      <Profile
+        cash={state.cash}
+        income={state.income}
+        netWorth={nw}
+        setIncome={(newIncome) =>
+          setState(prev => ({
+            ...prev,
+            income: newIncome
+        }))
+      }/>
+
+      <BriefcaseButton 
+        addCash={handleCookie}
+      />
+
+      <PortfolioChart newPoint={latestCandle} />
+
+      <AssetList
+        cash={state.cash}
+        bank={state.bank}
+        cryptoValue={state.cryptoValue}
+        cryptoInvested={state.cryptoInvested}
+        stocksValue={state.stocksValue}
+        stocksInvested={state.stocksInvested}
+        cryptoPrice={state.priceHistory.crypto.at(-1) * TRANSACTION_AMOUNT}
+        stockPrice={state.priceHistory.stocks.at(-1) * TRANSACTION_AMOUNT}
+        priceHistory={state.priceHistory}
+        isaValue={state.isaValue}
+        lisaValue={state.lisaValue}
+        lisaDeposited={state.lisaDeposited}
+        lisaCooldown={Math.max(0, state.lisaNextDepositTick - state.tickIndex)}
+        bonds={state.bonds}
+        tickIndex={state.tickIndex}
+        actionHandlers={actionHandlers}
+      />
     </div>
   )
 }
