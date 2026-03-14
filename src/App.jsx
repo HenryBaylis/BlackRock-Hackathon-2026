@@ -242,24 +242,26 @@ export default function App() {
         if (s.won || s.bankrupt || s.ended) return s
         const drained = { ...s, cash: s.cash * (1 - INFLATION_RATE) - RENT }
         const next = tick(drained)
-        const result = next.cash < 0 ? { ...next, bankrupt: true } : next
-
-        const open = prevNwRef.current
-        const close = netWorth(result)
-        prevNwRef.current = close
-        setLatestCandle({
-          time: gameStartTimeRef.current + result.tickIndex,
-          open,
-          high: Math.max(open, close),
-          low:  Math.min(open, close),
-          close,
-        })
-
-        return result
+        return next.cash < 0 ? { ...next, bankrupt: true } : next
       })
     }, 1000)
     return () => clearInterval(id)
   }, [started])
+
+  // Generate a candle whenever tickIndex advances
+  useEffect(() => {
+    if (!started || state.tickIndex === 0) return
+    const open = prevNwRef.current
+    const close = netWorth(state)
+    prevNwRef.current = close
+    setLatestCandle({
+      time: gameStartTimeRef.current + state.tickIndex,
+      open,
+      high: Math.max(open, close),
+      low:  Math.min(open, close),
+      close,
+    })
+  }, [state.tickIndex])
 
 
   const handleCookie = () => setState(s => ({ ...s, cash: s.cash + s.income }))

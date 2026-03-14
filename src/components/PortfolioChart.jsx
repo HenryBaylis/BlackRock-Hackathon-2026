@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { createChart, CandlestickSeries } from 'lightweight-charts';
 
 export default function PortfolioChart( { newPoint } ){
@@ -17,7 +17,7 @@ export default function PortfolioChart( { newPoint } ){
   const chartRef = useRef();
   const seriesRef = useRef();
   const chartInstanceRef = useRef();
-  const [prevData, setPrevData] = useState([]);
+  const dataRef = useRef([]);
   const MAX_POINTS = 60
 
   useEffect(() => {
@@ -35,21 +35,16 @@ export default function PortfolioChart( { newPoint } ){
     return () => {
       window.removeEventListener('resize', handleResize);
       chart.remove();
+      dataRef.current = [];
     };
   }, []);
 
   useEffect(() => {
-    if (seriesRef.current && newPoint) {
-      const updatedData = [...prevData, newPoint];
-
-      if (updatedData.length > MAX_POINTS) {
-        updatedData.shift();
-      }
-
-      setPrevData(updatedData);
-      seriesRef.current.setData(updatedData);
-      chartInstanceRef.current.timeScale().fitContent();
-    }
+    if (!seriesRef.current || !newPoint) return
+    dataRef.current = [...dataRef.current, newPoint]
+    if (dataRef.current.length > MAX_POINTS) dataRef.current.shift()
+    seriesRef.current.setData(dataRef.current)
+    chartInstanceRef.current.timeScale().fitContent()
   }, [newPoint]);
 
   return(
