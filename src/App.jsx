@@ -6,6 +6,7 @@ import Assets from './components/Assets'
 import Money from './components/Money'
 import Stocks from './components/Stocks'
 import BriefcaseButton from './components/Briefcase'
+import Profile from './components/Profile'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -15,7 +16,6 @@ const BANK_INTEREST_RATE    = 0.008 // per second (was 0.04 per 5s tick)
 const DOWN_PAYMENT_FRACTION = 0.20
 const GAME_DURATION         = 60
 const TICK_INTERVAL         = 1
-const COOKIE_VALUE          = 50
 const TRANSACTION_AMOUNT    = 1000
 const MAX_TICKS             = GAME_DURATION / TICK_INTERVAL  // 60
 
@@ -43,6 +43,7 @@ const CRYPTO_FUNCTIONS = [
 function makeInitialState() {
   return {
     cash: 1000,
+    income: 50,
     bank: 0,
     cryptoInvested: 0,
     cryptoValue: 0,
@@ -133,7 +134,7 @@ export default function App() {
   }, [])
 
 
-  const handleCookie = () => setState(s => ({ ...s, cash: s.cash + COOKIE_VALUE }))
+  const handleCookie = () => setState(s => ({ ...s, cash: s.cash + s.income }))
 
   const depositBank = () =>
     setState(s => ({ ...s, cash: s.cash - TRANSACTION_AMOUNT, bank: s.bank + TRANSACTION_AMOUNT }))
@@ -222,6 +223,15 @@ export default function App() {
           🏠 Buy House ({fmt(dp)} down payment needed)
         </button>
       </div>
+      <Profile 
+        cash={state.cash}
+        income={state.income}
+        setIncome={(newIncome) =>
+          setState(prev => ({
+            ...prev,
+            income: newIncome
+        }))
+      }/>
 
       <BriefcaseButton 
         addCash={handleCookie}
