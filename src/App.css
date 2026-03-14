@@ -182,3 +182,16 @@
     border-right-color: var(--border);
   }
 }
+
+.profile {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid black;
+  border-radius: 8px;
+
+  font-family: sans-serif;
+}
