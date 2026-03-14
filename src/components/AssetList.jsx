@@ -8,7 +8,7 @@ const INFLATION_RATE     = 0.005
 const LISA_MAX_TOTAL     = 20000
 const LISA_DEPOSIT_LIMIT = 4000
 
-export default function AssetList({ cash, bank, cryptoValue, cryptoInvested, stocksValue, stocksInvested, cryptoPrice, stockPrice, priceHistory, lisaValue, lisaDeposited, lisaCooldown, bondValue, bondInvested, actionHandlers }) {
+export default function AssetList({ cash, bank, cryptoValue, cryptoInvested, stocksValue, stocksInvested, cryptoPrice, stockPrice, priceHistory, isaValue, lisaValue, lisaDeposited, lisaCooldown, bondValue, bondInvested, actionHandlers }) {
     const canAfford = cash >= 10
 
     return (
@@ -26,13 +26,19 @@ export default function AssetList({ cash, bank, cryptoValue, cryptoInvested, sto
                 <button onClick={actionHandlers.withdrawBank} disabled={bank <= 0}>Withdraw</button>
             </div>
             <div className="balance-card">
+                <h3>💰 ISA</h3>
+                <p>{fmt(isaValue)}</p>
+                <small>Tax-free savings · freely withdrawable</small>
+                <button onClick={actionHandlers.depositIsa} disabled={!canAfford}>Deposit</button>
+                <button onClick={actionHandlers.withdrawIsa} disabled={isaValue <= 0}>Withdraw</button>
+            </div>
+            <div className="balance-card">
                 <h3>🏛️ Lifetime ISA</h3>
                 <p>{fmt(lisaValue)}</p>
-                <small>Tax-free · {fmt(lisaDeposited)}/{fmt(LISA_MAX_TOTAL)} deposited</small>
+                <small>Tax-free · locked for house purchase · {fmt(lisaDeposited)}/{fmt(LISA_MAX_TOTAL)}</small>
                 <button onClick={actionHandlers.depositLisa} disabled={!canAfford || lisaCooldown > 0 || lisaDeposited >= LISA_MAX_TOTAL}>
                     Deposit {fmt(LISA_DEPOSIT_LIMIT)}{lisaCooldown > 0 ? ` (${lisaCooldown}s)` : ''}
                 </button>
-                <button onClick={actionHandlers.withdrawLisa} disabled={lisaValue <= 0}>Withdraw</button>
             </div>
             <div className="assets">
                 <Asset
