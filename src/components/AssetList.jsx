@@ -22,7 +22,7 @@ export default function AssetList({ cash, bank, cryptoValue, cryptoInvested, sto
                 <button onClick={actionHandlers.depositBank} disabled={!canAfford}>Deposit</button>
                 <button onClick={actionHandlers.withdrawBank} disabled={bank <= 0}>Withdraw</button>
             </div>
-            <div>
+            <div className="assets">
                 <Asset
                     assetName="₿ Crypto"
                     value={cryptoValue}
