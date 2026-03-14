@@ -1,0 +1,116 @@
+.asset-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 220px);
+    gap: 24px;
+    justify-content: center;
+}
+
+.asset-card {
+    background: #0d0f12;
+    border: 1px solid #1e2430;
+    border-radius: 8px;
+    padding: 16px 18px;
+    width: 220px;
+    font-family: 'DM Mono', monospace, sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+.asset-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+}
+
+.asset-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.06em;
+    color: #e8eaf0;
+    margin: 0 0 10px;
+}
+
+.asset-price {
+    font-size: 20px;
+    font-weight: 500;
+    color: #e8eaf0;
+    margin-bottom: 4px;
+}
+
+.asset-value {
+    font-size: 11px;
+    color: #5a6278;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
+}
+
+.asset-value span {
+    color: #8892a8;
+}
+
+.asset-pnl {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 14px;
+    letter-spacing: 0.04em;
+}
+
+.sparkline-wrap {
+    margin: 0 -2px 10px;
+}
+
+.btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.btn-sell,
+.btn-buy {
+    padding: 7px 0;
+    border-radius: 4px;
+    border: none;
+    font-family: 'DM Mono', monospace, sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: opacity 0.15s, transform 0.08s;
+}
+
+.btn-sell {
+    background: rgba(220, 80, 80, 0.15);
+    color: #e05555;
+    border: 1px solid rgba(220, 80, 80, 0.3);
+}
+
+.btn-sell:hover:not(:disabled) {
+    background: rgba(220, 80, 80, 0.25);
+}
+
+.btn-buy {
+    background: rgba(80, 200, 140, 0.12);
+    color: #42c98a;
+    border: 1px solid rgba(80, 200, 140, 0.25);
+}
+
+.btn-buy:hover:not(:disabled) {
+    background: rgba(80, 200, 140, 0.22);
+}
+
+.btn-sell:active,
+.btn-buy:active {
+    transform: scale(0.96);
+}
+
+.btn-sell:disabled,
+.btn-buy:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
