@@ -214,6 +214,7 @@ export default function App() {
   const [started, setStarted] = useState(false)
   const [latestCandle, setLatestCandle] = useState(null)
   const prevNwRef = useRef(1000)
+  const gameStartTimeRef = useRef(0)
 
   // 60-second game countdown — at 0 resolve win/loss
   useEffect(() => {
@@ -247,7 +248,7 @@ export default function App() {
         const close = netWorth(result)
         prevNwRef.current = close
         setLatestCandle({
-          time: result.tickIndex,
+          time: gameStartTimeRef.current + result.tickIndex,
           open,
           high: Math.max(open, close),
           low:  Math.min(open, close),
@@ -332,6 +333,7 @@ export default function App() {
     setStarted(false)
     setLatestCandle(null)
     prevNwRef.current = 1000
+    gameStartTimeRef.current = 0
   }
 
   const nw = netWorth(state)
@@ -343,7 +345,7 @@ export default function App() {
       <div className="screen">
         <h1>🏠 House Hustle</h1>
         <p>You have 60 seconds to save a £60,000 down payment.<br />Invest wisely. Click fast. Buy the house.</p>
-        <button onClick={() => setStarted(true)}>Start Game</button>
+        <button onClick={() => { gameStartTimeRef.current = Math.floor(Date.now() / 1000); setStarted(true) }}>Start Game</button>
       </div>
     )
   }

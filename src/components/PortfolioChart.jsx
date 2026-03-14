@@ -16,33 +16,29 @@ export default function PortfolioChart( { newPoint } ){
 
   const chartRef = useRef();
   const seriesRef = useRef();
+  const chartInstanceRef = useRef();
   const [prevData, setPrevData] = useState([]);
   const MAX_POINTS = 60
 
   useEffect(() => {
-    const handleResize = () => {
-      chart.applyOptions({ width: chartRef.current.clientWidth });
-    };
-
     const chart = createChart(chartRef.current, chartOptions);
-    chart.timeScale().fitContent();
-    chart.timeScale().scrollToPosition(5);
+    chartInstanceRef.current = chart;
 
     const candleSeries = chart.addSeries(CandlestickSeries, { upColor: '#26a69a', downColor: '#ef5350', borderVisible: false, wickUpColor: '#26a69a', wickDownColor: '#ef5350' });
     seriesRef.current = candleSeries;
 
+    const handleResize = () => {
+      chart.applyOptions({ width: chartRef.current.clientWidth });
+    };
     window.addEventListener('resize', handleResize);
-
-    candleSeries.setData([]);
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      chart.remove(); 
+      chart.remove();
     };
   }, []);
 
   useEffect(() => {
-
     if (seriesRef.current && newPoint) {
       const updatedData = [...prevData, newPoint];
 
@@ -51,8 +47,8 @@ export default function PortfolioChart( { newPoint } ){
       }
 
       setPrevData(updatedData);
-
       seriesRef.current.setData(updatedData);
+      chartInstanceRef.current.timeScale().fitContent();
     }
   }, [newPoint]);
 
