@@ -192,6 +192,8 @@ function EndScreen({ rank, state, nw, dp, onReset }) {
     advice.push({ emoji: '₿', text: 'You lost money on crypto. Crypto is extremely volatile and frequently crashes to near zero — it\'s the highest risk asset in the game. Only put in money you can afford to lose entirely, and get out before the rug pull.' })
   if (state.bank > 2000 && state.isaValue < state.bank / 2)
     advice.push({ emoji: '💰', text: 'You kept a lot in the bank but not in an ISA. Both earn interest, but the ISA is completely tax-free — the bank takes 20% of every penny of interest it pays you. Moving savings into an ISA is a free gain.' })
+  if (state.cash > 2000 && state.cash > nw * 0.25)
+    advice.push({ emoji: '💵', text: 'You left a lot of money sitting as cash. Cash loses value every second through rent and inflation — it\'s the worst place to store wealth. Even the bank or an ISA will grow your money rather than drain it.' })
 
   return (
     <div className="screen">
